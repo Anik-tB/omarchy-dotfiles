@@ -1,0 +1,8 @@
+#!/bin/bash
+# Runs at the end of `omarchy update` (hooks/post-update.d).
+# 1. Commit + push my config, so anything the update's migrations changed in
+#    ~/.config shows up as its own commit (see/undo with anik-dots log / diff).
+# 2. Warn if the update changed stock code that my customizations copy.
+ver=$(pacman -Q omarchy 2>/dev/null | cut -d' ' -f2)
+~/.local/bin/anik-dots save "After omarchy update ${ver}" || true
+~/.local/bin/anik-drift check || true

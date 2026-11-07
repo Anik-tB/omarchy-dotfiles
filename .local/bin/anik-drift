@@ -1,0 +1,114 @@
+#!/bin/bash
+# anik-drift: warn when an Omarchy update changes stock code that my
+# customizations copy or override (list: ~/.config/anik-drift/watch.list).
+#
+# Each entry keeps a baseline: the stock files as they were when I last synced
+# my copy with them. Comparing baseline with today's stock shows exactly what
+# Omarchy changed upstream of my copy.
+#
+#   anik-drift                  status of every entry
+#   anik-drift check            status + desktop notification if anything drifted (post-update hook)
+#   anik-drift diff <name>      what Omarchy changed since the baseline (apply what you need to your copy)
+#   anik-drift ack <name>|--all mark as reviewed: baseline = current stock
+#   anik-drift seed             create baselines for new watch.list entries from current stock
+
+set -uo pipefail
+LIST=~/.config/anik-drift/watch.list
+BASE=~/.local/share/anik-drift/baseline
+STOCK=${OMARCHY_PATH:-/usr/share/omarchy}
+REPORT=~/.local/state/anik-drift/report.txt
+
+trim() { local s=$1; s=${s#"${s%%[![:space:]]*}"}; echo "${s%"${s##*[![:space:]]}"}"; }
+
+entries() {
+  grep -vE '^\s*(#|$)' "$LIST" | while IFS='|' read -r name mine paths; do
+    echo "$(trim "$name")|$(trim "$mine")|$(trim "$paths")"
+  done
+}
+
+entry() { entries | awk -F'|' -v n="$1" '$1==n'; }
+
+# Files that differ between baseline and stock for one entry, as "M|A|D path".
+changes() {
+  local name=$1 p f
+  for p in $2; do
+    diff -rqN "$BASE/$name/$p" "$STOCK/$p" 2>/dev/null | while read -r line; do
+      f=$(sed -E 's#^Files (.*) and .* differ$#\1#' <<<"$line")
+      f=${f#"$BASE/$name/"}
+      if [[ ! -e $BASE/$name/$f ]]; then echo "A $f"
+      elif [[ ! -e $STOCK/$f ]]; then echo "D $f"
+      else echo "M $f"; fi
+    done
+  done
+}
+
+snapshot() {
+  local name=$1 p
+  rm -rf "${BASE:?}/$name"
+  for p in $2; do
+    [[ -e $STOCK/$p ]] || continue
+    mkdir -p "$BASE/$name/$(dirname "$p")"
+    cp -a "$STOCK/$p" "$BASE/$name/$p"
+  done
+}
+
+seed() {
+  entries | while IFS='|' read -r name mine paths; do
+    [[ -d $BASE/$name ]] || { snapshot "$name" "$paths"; echo "seeded $name"; }
+  done
+}
+
+status() {
+  local drifted=() name mine paths n
+  while IFS='|' read -r name mine paths; do
+    n=$(changes "$name" "$paths" | wc -l)
+    if ((n > 0)); then
+      drifted+=("$name")
+      printf '\e[33m%-20s %3d stock file(s) changed\e[0m  -> %s\n' "$name" "$n" "$mine"
+    else
+      printf '%-20s up to date\n' "$name"
+    fi
+  done < <(entries)
+  DRIFTED=("${drifted[@]}")
+}
+
+case ${1:-status} in
+status) seed >/dev/null; status ;;
+check)
+  seed >/dev/null
+  mkdir -p "$(dirname "$REPORT")"
+  status > >(sed 's/\x1b\[[0-9;]*m//g' >"$REPORT")
+  wait
+  if ((${#DRIFTED[@]})); then
+    msg="Omarchy changed stock code behind: ${DRIFTED[*]}. Run anik-drift diff <name>, update your copy, then anik-drift ack <name>."
+    echo "$msg"
+    omarchy-notification-send -g 󰚰 -u critical "Review your customizations" "$msg" 2>/dev/null ||
+      notify-send -u critical "Review your customizations" "$msg" 2>/dev/null || true
+  else
+    echo "anik-drift: all customizations match their stock sources"
+  fi
+  ;;
+diff)
+  [[ -n ${2:-} ]] || { echo "usage: anik-drift diff <name>" >&2; exit 1; }
+  e=$(entry "$2"); [[ -n $e ]] || { echo "unknown entry: $2" >&2; exit 1; }
+  IFS='|' read -r name mine paths <<<"$e"
+  echo "# $name: what Omarchy changed (baseline -> current stock). Your copy: $mine"
+  changes "$name" "$paths"
+  echo
+  for p in $paths; do
+    diff -ruN "$BASE/$name/$p" "$STOCK/$p" 2>/dev/null | sed "s#$BASE/$name/#baseline/#; s#$STOCK/#stock/#"
+  done
+  ;;
+ack)
+  shift
+  if [[ ${1:-} == --all ]]; then set -- $(entries | cut -d'|' -f1); fi
+  [[ $# -gt 0 ]] || { echo "usage: anik-drift ack <name>... | --all" >&2; exit 1; }
+  for n in "$@"; do
+    e=$(entry "$n"); [[ -n $e ]] || { echo "unknown entry: $n" >&2; continue; }
+    IFS='|' read -r name mine paths <<<"$e"
+    snapshot "$name" "$paths" && echo "acked $name (baseline = $(pacman -Q omarchy 2>/dev/null | cut -d" " -f2) stock)"
+  done
+  ;;
+seed) seed ;;
+*) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

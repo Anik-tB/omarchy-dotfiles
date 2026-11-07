@@ -1,0 +1,22 @@
+# anik-drift watch list: things I copied or override, and the stock Omarchy
+# files they come from. Format:  name | my copy | stock paths (relative to /usr/share/omarchy)
+# After an Omarchy update, anik-drift reports every entry whose stock files changed.
+anik.agents        | ~/.config/omarchy/plugins/anik.agents        | shell/plugins/agents
+anik.audio         | ~/.config/omarchy/plugins/anik.audio         | shell/plugins/panels/audio
+anik.bar           | ~/.config/omarchy/plugins/anik.bar           | shell/plugins/bar
+anik.bluetooth     | ~/.config/omarchy/plugins/anik.bluetooth     | shell/plugins/panels/bluetooth
+anik.clock         | ~/.config/omarchy/plugins/anik.clock         | shell/plugins/panels/clock
+anik.dock          | ~/.config/omarchy/plugins/anik.dock          | shell/plugins/dock
+anik.indicators    | ~/.config/omarchy/plugins/anik.indicators    | shell/plugins/bar/widgets/Indicators.qml shell/plugins/bar/widgets/Indicators.manifest.json shell/plugins/bar/indicators
+anik.monitor       | ~/.config/omarchy/plugins/anik.monitor       | shell/plugins/panels/monitor
+anik.network       | ~/.config/omarchy/plugins/anik.network       | shell/plugins/panels/network
+anik.notifications | ~/.config/omarchy/plugins/anik.notifications | shell/plugins/notifications
+anik.osd           | ~/.config/omarchy/plugins/anik.osd           | shell/plugins/osd
+anik.power         | ~/.config/omarchy/plugins/anik.power         | shell/plugins/panels/power
+anik.tray          | ~/.config/omarchy/plugins/anik.tray          | shell/plugins/bar/widgets/Tray.qml shell/plugins/bar/widgets/TrayModel.js shell/plugins/bar/widgets/Tray.manifest.json
+anik.workspaces    | ~/.config/omarchy/plugins/anik.workspaces    | shell/plugins/bar/widgets/Workspaces.qml shell/plugins/bar/widgets/Workspaces.manifest.json
+plugin-api         | ~/.config/omarchy/plugins (all anik.* plugins) | shell/services shell/Commons
+screensaver        | ~/.local/share/anik-screensaver/run (via anik-overrides/bin/omarchy-screensaver) | bin/omarchy-screensaver bin/omarchy-launch-screensaver
+hypr-config        | ~/.config/hypr                               | config/hypr default/hypr/envs.lua
+menu               | ~/.config/omarchy/extensions/omarchy-menu.jsonc | default/omarchy/omarchy-menu.jsonc
+shell-config       | ~/.config/omarchy/shell.json, shell.toml     | config/omarchy
