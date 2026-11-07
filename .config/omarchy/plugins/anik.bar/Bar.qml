@@ -294,7 +294,13 @@ Item {
     if (!api) return
     api.activePopout = root.pluginOwnsBarObject(api.pluginId, root.activePopout)
       ? root.activePopout : (root.activePopout ? api.foreignPopoutMarker : null)
-    api.clickTargets = root.pluginClickTargets(api.pluginId)
+    // Anik: an open panel forwards bar clicks only to the click targets its
+    // api lists, and a third-party plugin's api lists only its own buttons, so
+    // from an anik.* panel a click on another icon just closed the panel. The
+    // anik.* plugins are this bar's own, so they see every target and switch
+    // panels in one click; other third-party plugins stay sandboxed.
+    api.clickTargets = String(api.pluginId).indexOf("anik.") === 0
+      ? root.clickTargets : root.pluginClickTargets(api.pluginId)
     api.layoutConfig = layoutSnapshot !== undefined
       ? JSON.parse(layoutSnapshot) : root.publicLayoutConfig()
   }
