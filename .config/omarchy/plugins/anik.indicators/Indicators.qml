@@ -515,8 +515,8 @@ BarWidget {
     Rectangle {
       anchors.centerIn: parent
       // Round for a plain icon; a pill around icon + label (the recording timer).
-      readonly property real dot: root.barSize - Style.space(10)
-      width: parent.width > root.barSize ? parent.width - Style.space(2) : Math.min(parent.width, dot)
+      readonly property real dot: root.bar ? root.barSize - Style.space(10) : 0
+      width: root.bar && parent.width > root.barSize ? parent.width - Style.space(2) : Math.min(parent.width, dot)
       height: Math.min(dot, parent.height)
       radius: height / 2
       color: root.bar && root.bar.foreground ? root.bar.foreground : "white"
