@@ -24,7 +24,6 @@ BarIndicator {
     if (root.nightlightService) {
       root.nightlightService.setNightlight(!root.active)
     } else if (!toggleProc.running) {
-      root.cliEnabled = !root.cliEnabled
       toggleProc.running = true
     }
   }
@@ -59,7 +58,13 @@ BarIndicator {
   Process {
     id: toggleProc
     command: ["omarchy-toggle-nightlight"]
-    onExited: root.refresh()
+    // The widget has two copies of each indicator (active row and hidden row),
+    // each with its own CLI state. Refresh them all, or they disagree and the
+    // icon vanishes from both rows until the 30 s poll.
+    onExited: {
+      if (root.indicatorHost && typeof root.indicatorHost.refresh === "function") root.indicatorHost.refresh()
+      else root.refresh()
+    }
   }
 
   onPressed: function() { root.toggle() }
