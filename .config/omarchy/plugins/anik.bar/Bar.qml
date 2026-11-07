@@ -38,6 +38,9 @@ Item {
   readonly property Component anikMediaComponent: Qt.createComponent(Qt.resolvedUrl("widgets/AnikMedia.qml"))
   // Anik: wide text modules that get a soft hover pill instead of a circle.
   readonly property var hoverPillModules: ["anik.clock", "anik.power", "anik.cava"]
+  // Anik: bumped whenever any widget's width changes, so the group dividers
+  // (ModuleSlot.divided) are worked out again once neighbours have loaded.
+  property int anikWidthRevision: 0
   // Manifest for the active bar option. Present for custom bars and useful for
   // diagnostics; the built-in bar does not otherwise need it.
   property var manifest: null
@@ -2877,6 +2880,7 @@ Item {
       return componentLoader.item
     }
     readonly property real widgetWidth: activeItem && activeItem.visible ? (root.vertical ? root.barSize : activeItem.implicitWidth) : 0
+    onWidgetWidthChanged: root.anikWidthRevision++  // Anik: re-check dividers
     readonly property real widgetHeight: activeItem && activeItem.visible ? activeItem.implicitHeight : 0
 
     parent: owner ? owner.widgetHolder : pool
@@ -2989,6 +2993,7 @@ Item {
     // layout) are skipped, so no stray or doubled line.
     property var listKeys: []
     readonly property bool divided: {
+      var revision = root.anikWidthRevision  // Anik: depend on every width
       if (root.vertical || alongLength <= 0) return false
       var keys = listKeys, id = moduleName, at = keys.indexOf(widgetKey)
       if (region === "left") return id === "anik.workspaces" && at > 0
