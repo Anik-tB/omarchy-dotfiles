@@ -1,0 +1,126 @@
+#!/bin/bash
+
+# Anik screensaver runner, started by anik-screensaver (or by the stock
+# launcher if this dir is put ahead on the session PATH). Plays the
+# Omarchy logo from ~/.config/omarchy/branding/screensaver.txt through a
+# curated set of ttfx effects, every one recoloured in the Anik morpho violet
+# palette, then holds the finished logo for a beat before the next effect.
+# Omarchy branding art stays in place, so the stock screensaver shows it too.
+
+ART=~/.config/omarchy/branding/screensaver.txt
+HOLD_SECONDS=4
+
+# Anik palette, deep -> light (vertical gradients put the first stop at the bottom)
+FINAL=(5b4bb0 7d95f5 a08ae6 e2d8fb f7f4fe)
+INK=2e2366 INDIGO=5b4bb0 BLUE=7d95f5 VIOLET=a08ae6 LILAC=e2d8fb PEARL=f7f4fe ORCHID=c29af0 WHITE=ffffff
+
+EFFECTS=(
+  beams binarypath blackhole bubbles burn colorshift crumble decrypt errorcorrect expand
+  fireworks highlight laseretch matrix middleout orbittingvolley overflow pour print rain
+  randomsequence rings scattered slice slide smoke spotlights spray swarm sweep synthgrid
+  thunderstorm unstable vhstape waves wipe
+)
+
+effect_args() {
+  local final=(--final-gradient-stops "${FINAL[@]}" --final-gradient-direction vertical)
+
+  case $1 in
+  beams) echo "${final[@]} --beam-gradient-stops $WHITE $LILAC $VIOLET $INDIGO" ;;
+  binarypath) echo "${final[@]} --binary-colors $INDIGO $BLUE $VIOLET $ORCHID" ;;
+  blackhole) echo "${final[@]} --blackhole-color $ORCHID --star-colors $PEARL $LILAC $VIOLET $BLUE $ORCHID $INDIGO" ;;
+  bubbles) echo "${final[@]} --bubble-colors $LILAC $VIOLET $BLUE $ORCHID --pop-color $WHITE" ;;
+  burn) echo "${final[@]} --starting-color $INK --burn-colors $WHITE $PEARL $ORCHID $VIOLET $INDIGO $INK" ;;
+  colorshift) echo "--gradient-stops $INDIGO $VIOLET $ORCHID $LILAC $INDIGO --cycles 2 --final-gradient-stops ${FINAL[*]} --final-gradient-direction vertical" ;;
+  decrypt) echo "${final[@]} --ciphertext-colors $INK $INDIGO $BLUE $VIOLET" ;;
+  errorcorrect) echo "${final[@]} --error-color $ORCHID --correct-color $LILAC" ;;
+  fireworks) echo "${final[@]} --firework-colors $PEARL $LILAC $VIOLET $ORCHID $BLUE" ;;
+  laseretch) echo "${final[@]} --laser-gradient-stops $WHITE $ORCHID $VIOLET --spark-gradient-stops $WHITE $LILAC $BLUE --cool-gradient-stops $VIOLET $INDIGO" ;;
+  matrix) echo "${final[@]} --rain-color-gradient $INK $INDIGO $VIOLET --highlight-color $PEARL --rain-time 8" ;;
+  middleout | pour) echo "${final[@]} --starting-color $WHITE" ;;
+  overflow) echo "${final[@]} --overflow-gradient-stops $INDIGO $VIOLET $ORCHID" ;;
+  rain) echo "${final[@]} --rain-colors $LILAC $VIOLET $BLUE $INDIGO $ORCHID" ;;
+  rings) echo "${final[@]} --ring-colors $VIOLET $ORCHID $BLUE $LILAC" ;;
+  smoke) echo "${final[@]} --smoke-gradient-stops $INK $INDIGO $VIOLET --starting-color 4a3f6b" ;;
+  swarm) echo "${final[@]} --base-color $VIOLET $BLUE --flash-color $ORCHID" ;;
+  synthgrid) echo "--grid-gradient-stops $INK $VIOLET $ORCHID --text-gradient-stops ${FINAL[*]}" ;;
+  thunderstorm) echo "${final[@]} --lightning-color $PEARL --glowing-text-color $ORCHID --spark-glow-color $LILAC" ;;
+  unstable) echo "${final[@]} --unstable-color $ORCHID" ;;
+  vhstape) echo "${final[@]} --glitch-line-colors $WHITE $ORCHID $VIOLET --glitch-wave-colors $WHITE $BLUE --noise-colors 161229 4a3f6b $VIOLET $PEARL" ;;
+  waves) echo "${final[@]} --wave-gradient-stops $INDIGO $VIOLET $ORCHID $PEARL" ;;
+  *) echo "${final[@]}" ;;
+  esac
+}
+
+screensaver_in_focus() {
+  hyprctl activewindow -j | jq -e '.class == "org.omarchy.screensaver"' >/dev/null 2>&1
+}
+
+exit_screensaver() {
+  hyprctl eval 'hl.config({ cursor = { invisible = false } })' &>/dev/null || hyprctl keyword cursor:invisible false &>/dev/null || true
+  pkill -x ttfx 2>/dev/null
+  pkill -f '[o]rg.omarchy.screensaver' 2>/dev/null
+  exit 0
+}
+
+trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
+
+printf '\033]11;rgb:14/11/1e\007' # theme ink-violet background
+printf '\033[?25l'                 # hide the text cursor
+
+hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null || hyprctl keyword cursor:invisible true &>/dev/null
+
+tty=$(tty 2>/dev/null)
+
+# Same as stock: wait for the compositor to resize the pty past 80x24 before
+# ttfx measures the canvas.
+wait_for_terminal_resize() {
+  local deadline=$((SECONDS + 2))
+  while ((SECONDS < deadline)) && [[ $(stty size 2>/dev/null) == "24 80" ]]; do
+    sleep 0.02
+  done
+}
+
+# Exits on any key at once; on focus loss only once it has lasted two checks in
+# a row, so a notification grabbing focus for a moment doesn't end the show.
+unfocused=0
+watch_input() {
+  read -rsn1 -t 1 && exit_screensaver
+  if screensaver_in_focus; then
+    unfocused=0
+  elif ((++unfocused >= 2)); then
+    exit_screensaver
+  fi
+}
+
+wait_for_terminal_resize
+
+# Shuffle bag: every effect plays once per round, never the same one twice in a row
+bag=()
+last=""
+next_effect() {
+  if ((${#bag[@]} == 0)); then
+    mapfile -t bag < <(printf '%s\n' "${EFFECTS[@]}" | shuf)
+    [[ ${bag[0]} == "$last" ]] && bag=("${bag[@]:1}" "${bag[0]}")
+  fi
+  effect=${bag[0]}
+  bag=("${bag[@]:1}")
+  last=$effect
+}
+
+while true; do
+  next_effect
+
+  # shellcheck disable=SC2046
+  ttfx -i "$ART" \
+    --frame-rate 120 --canvas-width 0 --canvas-height 0 --reuse-canvas --anchor-canvas c --anchor-text c \
+    --no-eol --no-restore-cursor \
+    "$effect" $(effect_args "$effect") &
+
+  while pgrep -t "${tty#/dev/}" -x ttfx >/dev/null; do
+    watch_input
+  done
+
+  for ((i = 0; i < HOLD_SECONDS; i++)); do
+    watch_input
+  done
+done

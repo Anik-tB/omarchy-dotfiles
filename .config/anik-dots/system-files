@@ -1,0 +1,3 @@
+# System files outside $HOME. `anik-dots save` copies each one into
+# ~/.config/anik-dots/system/<path> so it is backed up too (restore by hand with sudo).
+/etc/default/limine

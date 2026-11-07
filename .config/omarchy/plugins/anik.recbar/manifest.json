@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "anik.recbar",
+  "name": "Recording toolbar",
+  "version": "1.0.0",
+  "description": "Windows-style top-centre recording toolbar (timer, pause, stop) shown over fullscreen windows.",
+  "kinds": [
+    "panel"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "panel": "RecBar.qml"
+  }
+}

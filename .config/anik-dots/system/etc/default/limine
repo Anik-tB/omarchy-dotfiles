@@ -1,0 +1,6 @@
+ESP_PATH="/boot"
+
+KERNEL_CMDLINE[default]+="cryptdevice=PARTUUID=f7f1b2b3-397b-4e22-9347-f52fae5a2af0:root root=/dev/mapper/root zswap.enabled=0 rootflags=subvol=@ rw rootfstype=btrfs"
+
+# Hangsheng R75 QMK times out reading its USB config at boot (-110); give it time
+KERNEL_CMDLINE[default]+=" usbcore.quirks=342d:e484:gn"

@@ -1,0 +1,131 @@
+# Anik prompt — morpho violet, two lines.
+#   ╭─ path  branch status · languages · duration · jobs
+#   ╰─❯                                        time (right)
+# Violet for where you are, lilac for git, steel for tooling, red when
+# something failed. Language versions only show inside a project that uses them.
+
+add_newline = true
+command_timeout = 300
+
+# Symbols: ╭─ / ╰─ = corner lines joining the two prompt lines,
+#          ❯ = prompt arrow (red after a failed command), ❮ = vi normal mode.
+format = """
+[╭─](#4a3f6b) $username$hostname$directory$git_branch$git_state$git_status\
+$nodejs$bun$python$php$rust$golang$java$docker_context\
+$cmd_duration$jobs$sudo$battery
+[╰─](#4a3f6b)$status$character"""
+right_format = "$time"
+
+[character]
+success_symbol = "[❯](bold #a08ae6)"
+error_symbol = "[❯](bold #e2687f)"
+vimcmd_symbol = "[❮](bold #c29af0)"
+
+[status]
+disabled = false
+format = "[✗ $status]($style) "
+style = "bold #e2687f"
+
+# user@host only over SSH
+[username]
+format = "[$user]($style)"
+style_user = "#9c9fd8"
+style_root = "bold #e2687f"
+[hostname]
+ssh_only = true
+format = "[@$hostname]($style) "
+style = "#9c9fd8"
+
+[directory]
+truncation_length = 3
+truncation_symbol = "…/"
+style = "bold #a08ae6"
+read_only = " 󰌾"
+read_only_style = "#e2687f"
+repo_root_style = "bold #e2d8fb"
+repo_root_format = "[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
+
+[git_branch]
+symbol = " "
+format = "[$symbol$branch(:$remote_branch)]($style) "
+style = "#c9b8f2"
+
+[git_state]
+format = '[\($state( $progress_current/$progress_total)\)]($style) '
+style = "bold #e59a7a"
+
+[git_status]
+format = '([$all_status$ahead_behind]($style) )'
+style = "#c29af0"
+conflicted = "[=${count} ](#e2687f)"
+ahead = "⇡${count} "
+behind = "⇣${count} "
+diverged = "⇕⇡${ahead_count}⇣${behind_count} "
+untracked = "[?${count} ](#9c9fd8)"
+stashed = "[≡${count} ](#9c9fd8)"
+modified = "[!${count} ](#c9b8f2)"
+staged = "[+${count} ](#c29af0)"
+renamed = "[»${count} ](#c9b8f2)"
+deleted = "[✘${count} ](#e2687f)"
+
+# Language versions: one steel tone, so they read as context, not alarms.
+[nodejs]
+format = "[$symbol$version]($style) "
+symbol = " "
+style = "#9c9fd8"
+[bun]
+format = "[$symbol$version]($style) "
+symbol = " "
+style = "#9c9fd8"
+[python]
+format = '[$symbol$version( \($virtualenv\))]($style) '
+symbol = " "
+style = "#9c9fd8"
+[php]
+format = "[$symbol$version]($style) "
+symbol = " "
+style = "#9c9fd8"
+[rust]
+format = "[$symbol$version]($style) "
+symbol = " "
+style = "#9c9fd8"
+[golang]
+format = "[$symbol$version]($style) "
+symbol = " "
+style = "#9c9fd8"
+[java]
+format = "[$symbol$version]($style) "
+symbol = " "
+style = "#9c9fd8"
+[docker_context]
+format = "[$symbol$context]($style) "
+symbol = " "
+style = "#9c9fd8"
+
+[cmd_duration]
+min_time = 2_000
+format = "[ $duration]($style) "
+style = "#c9b8f2"
+
+[jobs]
+symbol = "✦"
+format = "[$symbol$number]($style) "
+style = "#e2d8fb"
+
+[sudo]
+disabled = false
+symbol = " "
+format = "[$symbol]($style)"
+style = "#e59a7a"
+
+[battery]
+format = "[$symbol$percentage]($style) "
+[[battery.display]]
+threshold = 15
+style = "bold #e2687f"
+
+[time]
+disabled = false
+format = "[$time]($style)"
+time_format = "%H:%M"
+style = "#6e6893"

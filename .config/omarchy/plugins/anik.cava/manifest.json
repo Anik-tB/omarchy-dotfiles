@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "anik.cava",
+  "name": "Anik Cava",
+  "version": "1.0.0",
+  "author": "Anik",
+  "description": "Cava audio visualizer for the bar; appears while music plays",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "Cava",
+    "description": "Mirrored cava bars that pulse with whatever is playing",
+    "category": "Audio",
+    "allowMultiple": false,
+    "defaultSection": "center"
+  }
+}

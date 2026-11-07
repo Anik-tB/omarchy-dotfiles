@@ -1,0 +1,16 @@
+#!/bin/bash
+# Super+Alt+M: bring the most recently minimized window back to the workspace
+# in front of you, focused (same as clicking it in the dock).
+
+ADDRESS=$(hyprctl clients -j | jq -r '[.[] | select(.workspace.name == "special:minimized")] | sort_by(.focusHistoryID) | first | .address // empty')
+[[ -n $ADDRESS ]] || { notify-send -t 1500 "No minimized windows"; exit 0; }
+WORKSPACE=$(hyprctl activeworkspace -j | jq -r .id)
+[[ $WORKSPACE =~ ^[0-9]+$ ]] || exit 1
+
+T="window = \"address:$ADDRESS\""
+hyprctl dispatch "hl.dsp.window.set_prop({ prop = \"no_anim\", value = \"1\", $T })" >/dev/null
+hyprctl dispatch "hl.dsp.window.move({ workspace = \"$WORKSPACE\", $T })" >/dev/null
+hyprctl dispatch "hl.dsp.focus({ $T })" >/dev/null
+hyprctl dispatch "hl.dsp.window.alter_zorder({ mode = \"top\", $T })" >/dev/null
+sleep 0.4
+hyprctl dispatch "hl.dsp.window.set_prop({ prop = \"no_anim\", value = \"unset\", $T })" >/dev/null

@@ -1,0 +1,183 @@
+# Voxtype Configuration
+#
+# Location: ~/.config/voxtype/config.toml
+# All settings can be overridden via CLI flags
+#
+# State file for external integrations (Waybar, polybar, etc.)
+# Use "auto" for default location ($XDG_RUNTIME_DIR/voxtype/state),
+# a custom path, or "disabled" to turn off. The daemon writes state
+# ("idle", "recording", "transcribing") to this file whenever it changes.
+# Required for `voxtype record toggle` and `voxtype status` commands.
+state_file = "auto"
+engine = "moonshine"
+
+[hotkey]
+# Hotkey is configured in Hyprland. Default is Super + Ctrl + X
+enabled = false
+
+[audio]
+# Audio input device ("default" uses system default)
+# List devices with: pactl list sources short
+device = "default"
+
+# Sample rate in Hz (whisper expects 16000)
+sample_rate = 16000
+
+# Maximum recording duration in seconds (safety limit)
+max_duration_secs = 60
+
+# Pause MPRIS media players during recording
+pause_media = true
+
+# [audio.feedback]
+# Enable audio feedback sounds (beeps when recording starts/stops)
+# enabled = true
+#
+# Sound theme: "default", "subtle", "mechanical", or path to custom theme directory
+# theme = "default"
+#
+# Volume level (0.0 to 1.0)
+# volume = 0.7
+
+[whisper]
+# Model to use for transcription
+# Options: tiny, tiny.en, base, base.en, small, small.en, medium, medium.en, large-v3, large-v3-turbo
+# .en models are English-only but faster and more accurate for English
+# large-v3-turbo is faster than large-v3 with minimal accuracy loss (recommended for GPU)
+# Or provide absolute path to a custom .bin model file
+model = "base.en"
+
+# Language for transcription
+# Use "en" for English, "auto" for auto-detection
+# See: https://github.com/openai/whisper#available-models-and-languages
+language = "en"
+
+# Translate non-English speech to English
+translate = false
+
+# Number of CPU threads for inference (omit for auto-detection)
+# threads = 4
+
+[output]
+# Primary output mode: "type" or "clipboard"
+# - type: Simulates keyboard input at cursor position (requires ydotool)
+# - clipboard: Copies text to clipboard (requires wl-copy)
+mode = "type"
+
+# Fall back to clipboard if typing fails
+fallback_to_clipboard = true
+
+# Delay between typed characters in milliseconds
+# 0 = fastest possible, increase if characters are dropped
+type_delay_ms = 1
+
+# Post-processing command (optional)
+# Pipe transcribed text through an external command for cleanup before output.
+# The command receives text on stdin and outputs processed text on stdout.
+# Useful for LLM-based text cleanup, grammar correction, filler word removal.
+# On any failure (timeout, error), falls back to original transcription.
+#
+# [output.post_process]
+# command = "ollama run llama3.2:1b 'Clean up this dictation. Fix grammar, remove filler words. Output only the cleaned text:'"
+# timeout_ms = 30000  # 30 second timeout (generous for LLM)
+
+[output.notification]
+# Show notification when recording starts (hotkey pressed)
+on_recording_start = false
+
+# Show notification when recording stops (transcription beginning)
+on_recording_stop = false
+
+# Show notification with transcribed text after transcription completes
+on_transcription = false
+
+[osd]
+frontend = "quickshell"
+style = "default"
+palette = "omarchy"
+layout = "wide"
+position = "bottom-center"
+top_margin = 0.74
+
+[osd.frame]
+background = "background"
+border = "none"
+glow = true
+halo = false
+
+[[osd.visual.layers]]
+type = "background"
+source = "state"
+color = "surface"
+order = -10
+x = 0.0
+y = 0.0
+width = 1.0
+height = 1.0
+gain = 1.0
+opacity = 0.62
+radius = 12
+
+[[osd.visual.layers]]
+type = "pulse"
+source = "rms"
+color = "accent"
+order = 0
+x = 0.03
+y = 0.08
+width = 0.94
+height = 0.64
+gain = 1.2
+opacity = 0.14
+radius = 10
+
+[[osd.visual.layers]]
+type = "waveform"
+source = "peak"
+color = "muted"
+order = 10
+x = 0.03
+y = 0.04
+width = 0.94
+height = 0.48
+gain = 0.62
+opacity = 0.70
+mirror = true
+
+[[osd.visual.layers]]
+type = "waveform"
+source = "peak"
+color = "accent"
+order = 20
+x = 0.03
+y = 0.18
+width = 0.94
+height = 0.52
+gain = 0.9
+opacity = 1.0
+mirror = true
+
+[[osd.visual.layers]]
+type = "meter"
+source = "peak"
+color = "success"
+secondary_color = "foreground"
+order = 30
+x = 0.03
+y = 0.82
+width = 0.94
+height = 0.11
+opacity = 1.0
+radius = 2
+
+[moonshine]
+model = "base"
+
+# [text]
+# Text processing options (word replacements, spoken punctuation)
+#
+# Enable spoken punctuation conversion (e.g., say "period" to get ".")
+# spoken_punctuation = false
+#
+# Custom word replacements (case-insensitive)
+# replacements = { "hyperwhisper" = "hyprwhspr" }

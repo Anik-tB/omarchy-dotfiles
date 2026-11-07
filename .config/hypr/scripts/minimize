@@ -1,0 +1,17 @@
+#!/bin/bash
+# Super+M: minimize the active window on ANY workspace (Omarchy's own
+# omarchy-hyprland-window-minimize only works on floating workspaces, where the
+# dock can bring it back). Bring it back with Super+Alt+M (scripts/unminimize),
+# or from the dock on a floating workspace.
+
+read -r ADDRESS WORKSPACE < <(hyprctl activewindow -j | jq -r '"\(.address // "") \(.workspace.id // "")"')
+[[ -n $ADDRESS && $WORKSPACE =~ ^[0-9]+$ ]] || exit 1
+
+# Same tag the stock script uses, so the dock knows where it came from.
+for tag in $(hyprctl clients -j | jq -r --arg a "$ADDRESS" '.[] | select(.address == $a) | (.tags // [])[]'); do
+  [[ $tag =~ ^omarchy-minimized-from-[0-9]+$ && $tag != "omarchy-minimized-from-$WORKSPACE" ]] &&
+    hyprctl dispatch "hl.dsp.window.tag({ tag = \"-$tag\", window = \"address:$ADDRESS\" })" >/dev/null
+done
+hyprctl dispatch "hl.dsp.window.tag({ tag = \"+omarchy-minimized-from-$WORKSPACE\", window = \"address:$ADDRESS\" })" >/dev/null
+hyprctl dispatch "hl.dsp.window.move({ workspace = \"special:minimized\", follow = false, window = \"address:$ADDRESS\" })" >/dev/null
+# ~/.config/hypr/hidden-focus.lua moves the keyboard off the hidden window.

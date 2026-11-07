@@ -1,0 +1,59 @@
+# Anik — morpho violet for btop. Hand-tuned rather than generated: this palette's
+# ANSI cyan/magenta are dark slate, which made graphs fade out and the net box red.
+
+theme[main_bg]="#14111e"
+theme[main_fg]="#c5bfe2"
+theme[title]="#e6e2f7"
+theme[hi_fg]="#a08ae6"
+theme[selected_bg]="#2a2340"
+theme[selected_fg]="#a08ae6"
+theme[inactive_fg]="#6b6590"
+theme[graph_text]="#d3cdee"
+theme[meter_bg]="#241f36"
+theme[proc_misc]="#c29af0"
+
+# Box outlines: one calm deep violet for every box, dividers a step darker.
+theme[cpu_box]="#4a3f6b"
+theme[mem_box]="#4a3f6b"
+theme[net_box]="#4a3f6b"
+theme[proc_box]="#4a3f6b"
+theme[div_line]="#2a2440"
+
+# Temperatures: orchid → lilac → rose when hot.
+theme[temp_start]="#c29af0"
+theme[temp_mid]="#c9b8f2"
+theme[temp_end]="#e2687f"
+
+# CPU graph/meters: deep indigo → butterfly blue → pale lilac as load rises.
+theme[cpu_start]="#5b4bb0"
+theme[cpu_mid]="#7d95f5"
+theme[cpu_end]="#e2d8fb"
+
+theme[free_start]="#3a2f6a"
+theme[free_mid]="#8670d0"
+theme[free_end]="#c29af0"
+
+theme[cached_start]="#36366e"
+theme[cached_mid]="#8d8fd8"
+theme[cached_end]="#c9b8f2"
+
+theme[available_start]="#5b4bb0"
+theme[available_mid]="#7d95f5"
+theme[available_end]="#a08ae6"
+
+# Used memory warms to red only near full.
+theme[used_start]="#7d95f5"
+theme[used_mid]="#a08ae6"
+theme[used_end]="#e2687f"
+
+theme[download_start]="#5b4bb0"
+theme[download_mid]="#7d95f5"
+theme[download_end]="#a08ae6"
+
+theme[upload_start]="#55507a"
+theme[upload_mid]="#c9b8f2"
+theme[upload_end]="#e6e2f7"
+
+theme[process_start]="#5b4bb0"
+theme[process_mid]="#7d95f5"
+theme[process_end]="#a08ae6"

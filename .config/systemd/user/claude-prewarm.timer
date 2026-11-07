@@ -1,0 +1,8 @@
+[Unit]
+Description=Pre-load Claude Code 30s after login
+
+[Timer]
+OnStartupSec=30s
+
+[Install]
+WantedBy=timers.target

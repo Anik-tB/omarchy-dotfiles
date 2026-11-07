@@ -1,0 +1,8 @@
+[Unit]
+Description=Pre-load Claude Code binary into page cache
+
+[Service]
+Type=oneshot
+Nice=19
+IOSchedulingClass=idle
+ExecStart=/bin/sh -c 'cat "$(readlink -f %h/.local/share/mise/installs/claude/latest/claude)" > /dev/null'

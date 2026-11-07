@@ -1,0 +1,98 @@
+#!/bin/bash
+# Toggle floating on the active window; when it becomes floating, size it to a
+# percentage of the focused monitor's tiling area (minus bar and outer gaps) and
+# center it pixel-exact, borders included.
+#
+# Usage: toggle-float-center [--pop] [width_pct] [height_pct]
+#   --pop  Also pin the window across workspaces (replaces omarchy-hyprland-window-pop)
+
+pop=false
+if [[ $1 == "--pop" ]]; then
+  pop=true
+  shift
+fi
+
+width_pct=${1:-70}
+height_pct=${2:-80}
+
+active=$(hyprctl activewindow -j)
+addr=$(echo "$active" | jq -r ".address")
+[[ -z $addr || $addr == "null" ]] && exit 0
+window="address:$addr"
+floating=$(echo "$active" | jq ".floating")
+pinned=$(echo "$active" | jq ".pinned")
+
+hypr_dispatch() {
+  local lua="$1"
+  shift
+  hyprctl dispatch "$lua" >/dev/null 2>&1 || hyprctl dispatch "$@" >/dev/null
+}
+
+toggle_float() {
+  hypr_dispatch "hl.dsp.window.float({ window = \"$window\", action = \"toggle\" })" togglefloating "$window"
+}
+
+# Prints "x y width height" for the window's client area (inside its border)
+geometry() {
+  local border gaps
+  border=$(hyprctl getoption general:border_size -j | jq ".int // 0")
+  gaps=$(hyprctl getoption general:gaps_out -j | jq -r '.css // "0 0 0 0"')
+
+  hyprctl monitors -j | jq -r --argjson wp "$width_pct" --argjson hp "$height_pct" \
+    --argjson b "$border" --arg gaps "$gaps" '
+    ($gaps | split(" ") | map(tonumber)) as $g |
+    ($g[0]) as $gt | ($g[1] // $gt) as $gr | ($g[2] // $gt) as $gb | ($g[3] // $gr) as $gl |
+    .[] | select(.focused) |
+    (if (.transform % 2) == 1 then [.height, .width] else [.width, .height] end) as [$mw, $mh] |
+    (.x + .reserved[0] + $gl) as $ax |
+    (.y + .reserved[1] + $gt) as $ay |
+    (($mw / .scale) - .reserved[0] - .reserved[2] - $gl - $gr | floor) as $aw |
+    (($mh / .scale) - .reserved[1] - .reserved[3] - $gt - $gb | floor) as $ah |
+    ($aw * $wp / 100 | floor) as $ow0 | ($ah * $hp / 100 | floor) as $oh0 |
+    (if (($aw - $ow0) % 2) == 1 then $ow0 - 1 else $ow0 end) as $ow |
+    (if (($ah - $oh0) % 2) == 1 then $oh0 - 1 else $oh0 end) as $oh |
+    "\($ax + ($aw - $ow) / 2 + $b) \($ay + ($ah - $oh) / 2 + $b) \($ow - 2 * $b) \($oh - 2 * $b)"'
+}
+
+# Float (if needed), size and position in one batch so the window glides there in
+# one animation. animate_manual_resizes is enabled just for this batch (otherwise
+# dispatcher resizes/moves snap instantly), then restored to the user's value.
+place() {
+  local x y w h anim float_lua="" float_legacy=""
+  read -r x y w h < <(geometry)
+  anim=$(hyprctl getoption misc:animate_manual_resizes -j | jq ".bool // (.int == 1)")
+  if [[ $1 == "float" ]]; then
+    float_lua="dispatch hl.dsp.window.float({ window = \"$window\", action = \"toggle\" }) ; "
+    float_legacy="dispatch togglefloating $window ; "
+  fi
+
+  hyprctl --batch "eval hl.config({ misc = { animate_manual_resizes = true } }) ; ${float_lua}dispatch hl.dsp.window.resize({ window = \"$window\", x = $w, y = $h }) ; dispatch hl.dsp.window.move({ window = \"$window\", x = $x, y = $y }) ; eval hl.config({ misc = { animate_manual_resizes = $anim } })" 2>/dev/null | grep -qv '^ok$\|^$' &&
+    hyprctl --batch "${float_legacy}dispatch resizewindowpixel exact $w $h,$window ; dispatch movewindowpixel exact $x $y,$window" >/dev/null
+}
+
+# Leave fullscreen / full width first so the window can float at the right size
+case $(echo "$active" | jq ".fullscreen") in
+  1) hypr_dispatch "hl.dsp.window.fullscreen({ window = \"$window\", mode = \"maximized\" })" fullscreen 1 ;;
+  2) hypr_dispatch "hl.dsp.window.fullscreen({ window = \"$window\", mode = \"fullscreen\" })" fullscreen 0 ;;
+esac
+
+if $pop; then
+  if [[ $pinned == "true" ]]; then
+    hypr_dispatch "hl.dsp.window.pin({ window = \"$window\" })" pin "$window"
+    [[ $floating == "true" ]] && toggle_float
+    hypr_dispatch "hl.dsp.window.tag({ window = \"$window\", tag = \"-pop\" })" tagwindow -pop "$window"
+  else
+    if [[ $floating == "true" ]]; then place; else place float; fi
+    hypr_dispatch "hl.dsp.window.pin({ window = \"$window\" })" pin "$window"
+    hypr_dispatch "hl.dsp.window.alter_zorder({ window = \"$window\", mode = \"top\" })" alterzorder top "$window"
+    hypr_dispatch "hl.dsp.window.tag({ window = \"$window\", tag = \"+pop\" })" tagwindow +pop "$window"
+  fi
+elif [[ $pinned == "true" ]]; then
+  # Hyprland unpins on tiling; also drop the pop styling
+  toggle_float
+  hypr_dispatch "hl.dsp.window.tag({ window = \"$window\", tag = \"-pop\" })" tagwindow -pop "$window"
+elif [[ $floating == "true" ]]; then
+  toggle_float
+else
+  place float
+fi

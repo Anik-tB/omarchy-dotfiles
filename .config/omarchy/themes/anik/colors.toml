@@ -1,0 +1,38 @@
+# Anik — morpho. Ink-violet glass, lavender text, violet glow with electric
+# butterfly-blue and orchid highlights.
+mode = "dark"
+
+accent = "#a08ae6"
+selection = "#2e2842"
+selection_background = "#c5bfe2"
+selection_foreground = "#14111e"
+muted = "#6e6893"
+
+background = "#14111e"
+dark_background = "#0f0d17"
+darker_background = "#0a0910"
+lighter_background = "#1e1a2c"
+
+foreground = "#c5bfe2"
+dark_foreground = "#6b6590"
+light_foreground = "#d3cdee"
+bright_foreground = "#e6e2f7"
+
+hyprland_active_border = "rgba(a08ae6ee) rgba(7d95f5aa) rgba(c29af0ee) 45deg"
+hyprland_inactive_border = "rgba(2e284299)"
+
+red = "#e2687f"
+yellow = "#e6c58f"
+orange = "#e59a7a"
+green = "#8fd4b4"
+cyan = "#73c6e2"
+blue = "#7d95f5"
+magenta = "#c29af0"
+brown = "#7a6258"
+
+bright_red = "#ec8597"
+bright_yellow = "#f0d5a6"
+bright_green = "#a8e2c7"
+bright_cyan = "#93d6ec"
+bright_blue = "#9cadf8"
+bright_magenta = "#d4b6f6"

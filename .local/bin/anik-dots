@@ -1,0 +1,48 @@
+#!/bin/bash
+# anik-dots: git backup of Anik's Omarchy customizations.
+# The repo is bare at ~/.dotfiles with $HOME as its work tree, so files are
+# tracked where they live. Tracked paths: ~/.config/anik-dots/paths.
+#
+#   anik-dots save [message]   copy system files, stage tracked paths, commit, push
+#   anik-dots status|diff|log  usual git views (tracked files only)
+#   anik-dots restore <file>   throw away local changes to a file
+#   anik-dots <git args...>    any other git command on the repo
+
+set -euo pipefail
+CONF=~/.config/anik-dots
+git_() { git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" -c core.excludesFile="$CONF/ignore" "$@"; }
+
+paths() { grep -vE '^\s*(#|$)' "$CONF/paths" | while read -r p; do [[ -e $HOME/$p ]] && echo "$p"; done; }
+
+copy_system_files() {
+  local f
+  grep -vE '^\s*(#|$)' "$CONF/system-files" 2>/dev/null | while read -r f; do
+    [[ -r $f ]] || continue
+    mkdir -p "$CONF/system$(dirname "$f")"
+    cp -p "$f" "$CONF/system$f"
+  done
+}
+
+cd "$HOME"
+case ${1:-status} in
+save)
+  shift
+  copy_system_files
+  mapfile -t P < <(paths)
+  git_ add -A -- "${P[@]}"
+  if git_ diff --cached --quiet; then
+    echo "anik-dots: nothing changed"
+  else
+    git_ commit -q -m "${*:-Update $(date '+%F %R')}"
+    git_ log -1 --stat --format='committed: %s' | tail -n +1
+  fi
+  if git_ remote get-url origin >/dev/null 2>&1; then
+    git_ push -q origin HEAD 2>&1 || echo "anik-dots: push failed (offline?) - will retry on next save" >&2
+  fi
+  ;;
+status) git_ status --short ;;
+diff) shift; git_ diff "$@" ;;
+log) shift; git_ log --oneline --stat -n "${1:-10}" ;;
+restore) shift; git_ checkout -- "$@" ;;
+*) git_ "$@" ;;
+esac

@@ -1,0 +1,12 @@
+*.bak
+*.bak.*
+*.bak-*
+*.disabled-*
+*.lock
+.config/omarchy/defaults/
+.config/omarchy/current/
+.local/share/applications/mimeinfo.cache
+.config/nvim/lazy-lock.json.bak
+.config/fcitx5/conf/cached_layouts
+__pycache__/
+*.swp

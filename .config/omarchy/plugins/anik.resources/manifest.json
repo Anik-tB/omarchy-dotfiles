@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "anik.resources",
+  "name": "Anik Resources",
+  "version": "1.0.0",
+  "author": "Anik",
+  "description": "CPU and RAM usage as compact text",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "Resources",
+    "description": "CPU and RAM percentages (swap when in use)",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "center"
+  }
+}

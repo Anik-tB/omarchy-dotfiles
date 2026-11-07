@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "anik.bell",
+  "name": "Anik Notification Bell",
+  "version": "1.0.0",
+  "author": "Anik",
+  "description": "Notification bell: unread dot, recent notifications, Do Not Disturb",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "Notification bell",
+    "description": "Click: recent notifications. Right click: Do Not Disturb. Middle click: clear all",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
