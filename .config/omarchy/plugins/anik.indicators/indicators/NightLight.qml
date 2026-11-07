@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import qs.Commons
 import qs.Ui
 
 // Service is null under anik.bar (see Dnd.qml); fall back to the CLI.
@@ -12,8 +13,8 @@ BarIndicator {
   active: nightlightService ? nightlightService.enabled : cliEnabled
   activeText: "󰔎"
   inactiveText: "󰔎"
-  activeTooltipText: "Day Light"
-  inactiveTooltipText: "Night Light"
+  activeTooltipText: I18n.t("bar.dayLight")
+  inactiveTooltipText: I18n.t("bar.nightLight")
 
   function refresh() {
     if (!root.nightlightService && !statusProc.running && !toggleProc.running) statusProc.running = true

@@ -1,33 +1,13 @@
 {
   "bar": {
-    "centerAnchor": "anik.clock",
     "id": "anik.bar",
     "layout": {
       "center": [
-        {
-          "id": "omarchy.media"
-        },
-        {
-          "id": "anik.cava"
-        },
-        {
-          "id": "anik.resources"
-        },
         {
           "id": "anik.clock",
           "format": "dddd h:mm AP",
           "formatAlt": "dddd d MMMM yyyy",
           "verticalFormat": "HH\n—\nmm"
-        },
-        {
-          "id": "anik.indicators"
-        },
-        {
-          "id": "omarchy.system-update"
-        },
-        {
-          "id": "anik.power",
-          "showPercentage": true
         }
       ],
       "left": [
@@ -64,8 +44,29 @@
           "id": "anik.bell"
         }
       ],
-      "centerBegin": [],
-      "centerEnd": [],
+      "centerBegin": [
+        {
+          "id": "omarchy.media"
+        },
+        {
+          "id": "anik.cava"
+        },
+        {
+          "id": "anik.resources"
+        }
+      ],
+      "centerEnd": [
+        {
+          "id": "anik.indicators"
+        },
+        {
+          "id": "omarchy.system-update"
+        },
+        {
+          "id": "anik.power",
+          "showPercentage": true
+        }
+      ],
       "tray": []
     },
     "position": "top",

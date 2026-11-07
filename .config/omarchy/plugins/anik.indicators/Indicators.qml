@@ -8,24 +8,38 @@ BarWidget {
   id: root
   moduleName: "omarchy.indicators"
 
-  readonly property var defaultIndicatorEntries: [ "Dictation", "ScreenRecording", "Reminder", "NightLight", "Dnd", "StayAwake" ]
+  // Anik: Dictation kept (Omarchy 4.5 dropped it; voxtype is used here).
+  readonly property var defaultIndicatorEntries: [ "Dictation", "PasswordlessSudo", "ScreenRecording", "RemoteSession", "Reminder", "NightLight", "Dnd", "StayAwake" ]
   readonly property var indicatorEntries: indicatorEntriesFromSettings(settings)
   property var activeIndicatorIds: []
   property var indicatorActiveStates: ({})
   property bool indicatorAreaHovered: false
   property bool indicatorItemHovered: false
-  // Each indicator draws its own round hover circle; stop the bar drawing a
-  // second one centred on the whole slot (icon + collapsed dot).
+  // Anik: each indicator draws its own round hover circle; stop the bar
+  // drawing a second one centred on the whole slot.
   readonly property bool ownHoverHighlight: true
   readonly property bool alwaysShowIndicators: setting("alwaysShow", false) === true
-  // Only the indicators' own hover reveals them; the stock widget also revealed
-  // them whenever the pointer was anywhere in the centre section (resources,
-  // clock, weather), which made the row pop open by itself.
+  // Anik: only the indicators' own hover reveals them; stock also revealed them
+  // whenever the pointer was anywhere in the centre section, which made the
+  // row pop open by itself.
   readonly property bool revealInactiveIndicators: alwaysShowIndicators || indicatorAreaHovered || indicatorItemHovered
+  // The active block sits against the widget's fixed edge, and everything that
+  // grows the widget (revealed inactive icons, newly active ones) goes on its
+  // far side, so the icons already showing keep their click targets. A
+  // centered widget grows both ways and keeps the end-fixed arrangement.
+  readonly property bool fixedAtStart: fixedEdge === "start"
 
   signal refreshRequested()
 
   ListModel { id: activeIndicatorModel }
+
+  // The inactive indicators in the order they show. Facing the other way, the
+  // widget mirrors them along with its blocks, so they read outward from the
+  // active block as they do from the other side. Turned around by moves, so no
+  // indicator is built again.
+  ListModel { id: inactiveIndicatorModel }
+  property string inactiveIndicatorJson: ""
+  property bool inactiveIndicatorsMirrored: false
 
   function entryId(entry) {
     if (typeof entry === "string") return entry
@@ -148,9 +162,12 @@ BarWidget {
     indicatorActiveStates = states
 
     var ids = orderedActiveIds(states, activeIndicatorIds)
-    // The active block sits closest to the clock, so newcomers go on the far
-    // side of it. Appending would shove everything already showing sideways.
-    if (active && ids.indexOf(id) === -1 && hasIndicatorId(id)) ids.unshift(id)
+    // Newcomers go on the side of the active block away from the fixed edge.
+    // The other side would shove everything already showing sideways.
+    if (active && ids.indexOf(id) === -1 && hasIndicatorId(id)) {
+      if (fixedAtStart) ids.push(id)
+      else ids.unshift(id)
+    }
     activeIndicatorIds = ids
     syncActiveIndicatorModel()
   }
@@ -160,9 +177,27 @@ BarWidget {
     syncActiveIndicatorModel()
   }
 
+  function syncInactiveIndicatorModel() {
+    var json = JSON.stringify(indicatorEntries)
+    if (json !== inactiveIndicatorJson) {
+      inactiveIndicatorJson = json
+      inactiveIndicatorModel.clear()
+      inactiveIndicatorsMirrored = false
+      for (var i = 0; i < indicatorEntries.length; i++)
+        inactiveIndicatorModel.append({ entryJson: JSON.stringify(indicatorEntries[i]) })
+    }
+    if (inactiveIndicatorsMirrored === fixedAtStart) return
+    for (var j = 1; j < inactiveIndicatorModel.count; j++) inactiveIndicatorModel.move(j, 0, 1)
+    inactiveIndicatorsMirrored = fixedAtStart
+  }
+
   function refresh() { root.refreshRequested() }
 
-  onIndicatorEntriesChanged: syncActiveIndicatorOrder()
+  onIndicatorEntriesChanged: {
+    syncActiveIndicatorOrder()
+    syncInactiveIndicatorModel()
+  }
+  onFixedAtStartChanged: syncInactiveIndicatorModel()
 
   // Only the tree for the current orientation exists (see orientationLoader
   // below); its wrapper keeps the stock sizing expressions, so the root's
@@ -171,7 +206,7 @@ BarWidget {
   implicitWidth: orientationLoader.item ? orientationLoader.item.implicitWidth : 0
   implicitHeight: orientationLoader.item ? orientationLoader.item.implicitHeight : 0
 
-  IpcHandler {
+  ShellIpc {
     target: "omarchy.indicators"
 
     function refresh(): void {
@@ -188,7 +223,10 @@ BarWidget {
     }
   }
 
-  Component.onCompleted: root.refreshRequested()
+  Component.onCompleted: {
+    syncInactiveIndicatorModel()
+    root.refreshRequested()
+  }
 
   // Instantiating both orientation trees and toggling `visible` doubled every
   // indicator per bar (and every process an indicator spawns, once per
@@ -198,6 +236,9 @@ BarWidget {
     sourceComponent: root.vertical ? verticalIndicatorsTree : horizontalIndicatorsTree
   }
 
+  // The two blocks are placed by hand rather than by a Row or Column: a
+  // Column cannot reverse its order, and the inactive area has to go on
+  // whichever side is away from the fixed edge.
   Component {
     id: horizontalIndicatorsTree
 
@@ -207,65 +248,57 @@ BarWidget {
       width: implicitWidth
       height: implicitHeight
 
-      Row {
-        id: horizontalIndicators
+      HoverHandler {
+        onHoveredChanged: root.setIndicatorAreaHovered(hovered)
+      }
 
-        spacing: 0
+      Item {
+        id: inactiveHorizontalArea
 
-        HoverHandler {
-          onHoveredChanged: root.setIndicatorAreaHovered(hovered)
+        x: root.fixedAtStart ? activeHorizontalBlock.width : 0
+        // Anik: collapsed, it keeps a small hover target with a faint dot, so
+        // pointing at that spot (and only there) opens the row.
+        implicitWidth: root.revealInactiveIndicators ? inactiveHorizontalBlock.implicitWidth : Style.space(20)
+        implicitHeight: Math.max(inactiveHorizontalBlock.implicitHeight, root.barSize)
+        width: implicitWidth
+        height: implicitHeight
+        clip: true
+        Behavior on implicitWidth { NumberAnimation { duration: Style.duration(160); easing.type: Easing.OutCubic } }
+
+        Rectangle {
+          anchors.centerIn: parent
+          width: Style.space(4)
+          height: width
+          radius: width / 2
+          color: root.bar && root.bar.foreground ? root.bar.foreground : "white"
+          opacity: root.revealInactiveIndicators ? 0 : 0.4
+          Behavior on opacity { NumberAnimation { duration: 120 } }
         }
 
-        // Active icons come first: the inactive area expands on hover, and if it
-        // sat on the left it pushed the active icons right, out from under the
-        // pointer, so they could not be clicked.
-        ActiveIndicatorBlock {
-          id: activeHorizontalBlock
+        IndicatorBlock {
+          id: inactiveHorizontalBlock
+          opacity: root.revealInactiveIndicators ? 1 : 0
+          Behavior on opacity { NumberAnimation { duration: 120 } }
+          anchors.verticalCenter: parent.verticalCenter
           indicatorsModule: root
-          indicatorModel: activeIndicatorModel
+          indicatorModel: inactiveIndicatorModel
+          indicatorBlock: "inactive"
           horizontal: true
           reportActiveState: !root.vertical
         }
 
-        Item {
-          id: inactiveHorizontalArea
-
-          // Collapsed it keeps a small hover target with a faint dot, so
-          // pointing at that spot (and only there) opens the row.
-          implicitWidth: root.revealInactiveIndicators ? inactiveHorizontalBlock.implicitWidth : Style.space(20)
-          implicitHeight: Math.max(inactiveHorizontalBlock.implicitHeight, root.barSize)
-          width: implicitWidth
-          height: implicitHeight
-          clip: true
-          Behavior on implicitWidth { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-
-          Rectangle {
-            anchors.centerIn: parent
-            width: Style.space(4)
-            height: width
-            radius: width / 2
-            color: root.bar && root.bar.foreground ? root.bar.foreground : "white"
-            opacity: root.revealInactiveIndicators ? 0 : 0.4
-            Behavior on opacity { NumberAnimation { duration: 120 } }
-          }
-
-          IndicatorBlock {
-            id: inactiveHorizontalBlock
-            opacity: root.revealInactiveIndicators ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: 120 } }
-            anchors.verticalCenter: parent.verticalCenter
-            indicatorsModule: root
-            indicatorEntries: root.indicatorEntries
-            indicatorBlock: "inactive"
-            horizontal: true
-            reportActiveState: !root.vertical
-          }
-
-          HoverHandler {
-            onHoveredChanged: root.setIndicatorAreaHovered(hovered)
-          }
+        HoverHandler {
+          onHoveredChanged: root.setIndicatorAreaHovered(hovered)
         }
+      }
 
+      ActiveIndicatorBlock {
+        id: activeHorizontalBlock
+        x: root.fixedAtStart ? 0 : inactiveHorizontalArea.width
+        indicatorsModule: root
+        indicatorModel: activeIndicatorModel
+        horizontal: true
+        reportActiveState: !root.vertical
       }
     }
   }
@@ -279,46 +312,42 @@ BarWidget {
       width: implicitWidth
       height: implicitHeight
 
-      Column {
-        id: verticalIndicators
+      HoverHandler {
+        onHoveredChanged: root.setIndicatorAreaHovered(hovered)
+      }
 
-        spacing: 0
+      Item {
+        id: inactiveVerticalArea
+
+        y: root.fixedAtStart ? activeVerticalBlock.height : 0
+        implicitWidth: Math.max(inactiveVerticalBlock.implicitWidth, root.barSize)
+        implicitHeight: root.revealInactiveIndicators ? inactiveVerticalBlock.implicitHeight : 0
+        width: implicitWidth
+        height: implicitHeight
+        clip: true
+
+        IndicatorBlock {
+          id: inactiveVerticalBlock
+          anchors.horizontalCenter: parent.horizontalCenter
+          indicatorsModule: root
+          indicatorModel: inactiveIndicatorModel
+          indicatorBlock: "inactive"
+          horizontal: false
+          reportActiveState: root.vertical
+        }
 
         HoverHandler {
           onHoveredChanged: root.setIndicatorAreaHovered(hovered)
         }
+      }
 
-        Item {
-          id: inactiveVerticalArea
-
-          implicitWidth: Math.max(inactiveVerticalBlock.implicitWidth, root.barSize)
-          implicitHeight: root.revealInactiveIndicators ? inactiveVerticalBlock.implicitHeight : 0
-          width: implicitWidth
-          height: implicitHeight
-          clip: true
-
-          IndicatorBlock {
-            id: inactiveVerticalBlock
-            anchors.horizontalCenter: parent.horizontalCenter
-            indicatorsModule: root
-            indicatorEntries: root.indicatorEntries
-            indicatorBlock: "inactive"
-            horizontal: false
-            reportActiveState: root.vertical
-          }
-
-          HoverHandler {
-            onHoveredChanged: root.setIndicatorAreaHovered(hovered)
-          }
-        }
-
-        ActiveIndicatorBlock {
-          id: activeVerticalBlock
-          indicatorsModule: root
-          indicatorModel: activeIndicatorModel
-          horizontal: false
-          reportActiveState: root.vertical
-        }
+      ActiveIndicatorBlock {
+        id: activeVerticalBlock
+        y: root.fixedAtStart ? 0 : inactiveVerticalArea.height
+        indicatorsModule: root
+        indicatorModel: activeIndicatorModel
+        horizontal: false
+        reportActiveState: root.vertical
       }
     }
   }
@@ -391,7 +420,7 @@ BarWidget {
   component IndicatorBlock: Item {
     id: indicatorBlockRoot
 
-    property var indicatorEntries: []
+    property var indicatorModel: null
     property var indicatorsModule: null
     property string indicatorBlock: "active"
     property bool horizontal: true
@@ -416,12 +445,12 @@ BarWidget {
         spacing: 0
 
         Repeater {
-          model: indicatorBlockRoot.indicatorEntries
+          model: indicatorBlockRoot.indicatorModel
 
           IndicatorLoader {
-            required property var modelData
+            required property string entryJson
             indicatorsModule: indicatorBlockRoot.indicatorsModule
-            entry: modelData
+            entry: JSON.parse(entryJson)
             indicatorBlock: indicatorBlockRoot.indicatorBlock
             reportActiveState: indicatorBlockRoot.reportActiveState
           }
@@ -436,12 +465,12 @@ BarWidget {
         spacing: 0
 
         Repeater {
-          model: indicatorBlockRoot.indicatorEntries
+          model: indicatorBlockRoot.indicatorModel
 
           IndicatorLoader {
-            required property var modelData
+            required property string entryJson
             indicatorsModule: indicatorBlockRoot.indicatorsModule
-            entry: modelData
+            entry: JSON.parse(entryJson)
             indicatorBlock: indicatorBlockRoot.indicatorBlock
             reportActiveState: indicatorBlockRoot.reportActiveState
           }
@@ -480,12 +509,12 @@ BarWidget {
     onReportActiveStateChanged: syncActiveState()
     onBarRefChanged: injectProps()
 
-    // Same round hover highlight the bar draws behind its other icon buttons
+    // Anik: the round hover highlight the bar draws behind its other icons
     // (the indicators share one slot, so the bar can't draw it per icon).
     HoverHandler { id: indicatorHover }
     Rectangle {
       anchors.centerIn: parent
-      // Round for a plain icon; a pill around icon + label (e.g. the recording timer).
+      // Round for a plain icon; a pill around icon + label (the recording timer).
       readonly property real dot: root.barSize - Style.space(10)
       width: parent.width > root.barSize ? parent.width - Style.space(2) : Math.min(parent.width, dot)
       height: Math.min(dot, parent.height)
@@ -499,6 +528,7 @@ BarWidget {
       id: indicatorSource
 
       anchors.fill: parent
+      // Anik: this clone keeps its indicators beside it.
       source: indicatorSlot.indicatorId ? Qt.resolvedUrl("indicators/" + indicatorSlot.indicatorId + ".qml") : ""
       onLoaded: {
         indicatorSlot.injectProps()

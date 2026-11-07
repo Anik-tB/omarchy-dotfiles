@@ -12,7 +12,7 @@
     "barWidget": "Indicators.qml"
   },
   "barWidget": {
-    "displayName": "My Indicators",
+    "displayName": "Indicators",
     "description": "Manual state indicators",
     "category": "Status",
     "allowMultiple": true,
@@ -29,12 +29,22 @@
           {
             "value": "Dictation",
             "label": "Dictation",
-            "description": "Voice typing status"
+            "description": "Voice typing status (Anik: kept after Omarchy 4.5 dropped it)"
+          },
+          {
+            "value": "PasswordlessSudo",
+            "label": "Passwordless sudo",
+            "description": "Warning while passwordless root access is enabled"
           },
           {
             "value": "ScreenRecording",
             "label": "Screen recording",
             "description": "GPU screen recorder status"
+          },
+          {
+            "value": "RemoteSession",
+            "label": "Remote session",
+            "description": "Warning while someone is connected through gliff"
           },
           {
             "value": "Reminder",
@@ -69,5 +79,6 @@
   },
   "omarchy": {
     "clonedFrom": "omarchy.indicators"
-  }
+  },
+  "displayName": "My Indicators"
 }

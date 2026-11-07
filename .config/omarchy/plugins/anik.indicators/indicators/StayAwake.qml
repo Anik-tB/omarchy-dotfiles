@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Qt.labs.folderlistmodel
+import qs.Commons
 import qs.Ui
 
 // Service is null under anik.bar (see Dnd.qml). The idle service (anik.idle)
@@ -14,11 +15,12 @@ BarIndicator {
   property bool pending: false
   readonly property bool fileAwake: stateDir.count > 0
 
+  // Anik: falls back to the state file when the bar gives no idle service.
   active: idleService ? idleService.stayAwake : (pending ? pendingState : fileAwake)
   activeText: "󰅶"
   inactiveText: "󰅶"
-  activeTooltipText: "Allow Idle Lock & Screensaver"
-  inactiveTooltipText: "Stay Awake"
+  activeTooltipText: I18n.t("bar.allowIdleLock")
+  inactiveTooltipText: I18n.t("bar.stayAwake")
 
   onFileAwakeChanged: pending = false
 
