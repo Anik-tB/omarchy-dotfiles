@@ -22,7 +22,7 @@ BarIndicator {
 
   FileView {
     id: stateFile
-    path: Quickshell.env("HOME") + "/.local/state/omarchy/notifications.json"
+    path: Quickshell.env("HOME") + "/.local/state/omarchy/notifications/quiet.json"
     watchChanges: true
     onFileChanged: reload()
     onLoaded: {

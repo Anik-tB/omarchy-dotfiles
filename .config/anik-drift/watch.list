@@ -10,7 +10,8 @@ anik.dock          | ~/.config/omarchy/plugins/anik.dock          | shell/plugin
 anik.indicators    | ~/.config/omarchy/plugins/anik.indicators    | shell/plugins/bar/widgets/Indicators.qml shell/plugins/bar/widgets/Indicators.manifest.json shell/plugins/bar/indicators
 anik.monitor       | ~/.config/omarchy/plugins/anik.monitor       | shell/plugins/panels/monitor
 anik.network       | ~/.config/omarchy/plugins/anik.network       | shell/plugins/panels/network
-anik.notifications | ~/.config/omarchy/plugins/anik.notifications | shell/plugins/notifications
+anik.notifications | ~/.config/omarchy/plugins/anik.notifications (4.5 code + "Anik:" edits) | shell/plugins/notifications
+anik.bell          | ~/.config/omarchy/plugins/anik.bell (reads live/history/quiet.json) | shell/plugins/notifications/Store.js
 anik.osd           | ~/.config/omarchy/plugins/anik.osd           | shell/plugins/osd
 anik.power         | ~/.config/omarchy/plugins/anik.power         | shell/plugins/panels/power
 anik.tray          | ~/.config/omarchy/plugins/anik.tray          | shell/plugins/bar/widgets/Tray.qml shell/plugins/bar/widgets/TrayModel.js shell/plugins/bar/widgets/Tray.manifest.json

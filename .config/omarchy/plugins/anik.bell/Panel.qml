@@ -5,8 +5,7 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import "../anik.bar"
-import "../anik.notifications/components"
-import "../anik.notifications/NotificationLogic.js" as NotificationLogic
+import "../anik.notifications/Security.js" as Security
 
 // Notification Centre: drops down under the bell. Header with "Notifications",
 // a Do Not Disturb pill and Clear; below it the recent notifications as the
@@ -29,9 +28,8 @@ Panel {
   property bool dnd: false
   property int historyCount: 0
 
-  readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/omarchy/"
-  readonly property string historyDir: stateDir + "notifications/history"
-  readonly property string imagesDir: stateDir + "notifications/images"
+  // Omarchy 4.5 keeps history as one JSON array, newest first (anik.notifications).
+  readonly property string historyFile: Quickshell.env("HOME") + "/.local/state/omarchy/notifications/history.json"
 
   AnikPalette { id: themePalette }
 
@@ -62,13 +60,13 @@ Panel {
   // own command (e.g. open a screenshot in the editor), otherwise focus the
   // sending app, launching it if it isn't open. Then the row is done.
   function openEntry(data) {
-    var argv = NotificationLogic.parseExecArgv(data.execArgv || "")
+    var argv = Security.parseExecArgv(data.execArgv || "")
     if (argv) {
       Quickshell.execDetached(argv)
     } else {
       Quickshell.execDetached([
         Qt.resolvedUrl("../anik.notifications/open-app.sh").toString().replace("file://", ""),
-        String(data.app || ""), String(data.desktopEntry || "")
+        String(data.app || ""), String(data.appIcon || "")
       ])
     }
     root.close()
@@ -91,42 +89,41 @@ Panel {
   }
   onHistoryCountChanged: if (root.opened) reload()
 
+  // History is the service's, so entries are removed through its IPC.
   function removeEntry(fileName) {
+    var gone = entries.filter(function(e) { return e.fileName === fileName })[0]
     entries = entries.filter(function(e) { return e.fileName !== fileName })
-    remover.command = ["bash", "-c", "rm -f -- \"$1/$3\" \"$2/${3%.json}\"-*", "--", historyDir, imagesDir, fileName]
+    if (!gone) return
+    remover.command = ["omarchy-shell", "notifications", "removeHistory", String(gone.key), String(gone.closed_ts)]
     remover.running = true
   }
 
   function clearAll() {
     entries = []
-    if (root.bar) root.bar.run("sh -c 'omarchy-shell notifications dismissAll; omarchy-shell notifications clear'")
+    if (root.bar) root.bar.run("sh -c 'omarchy-shell notifications dismissAll; omarchy-shell notifications clearHistory'")
   }
 
   function toggleDnd() {
     if (root.bar) root.bar.run("omarchy-shell notifications toggleDnd")
   }
 
-  // Each history file is one JSON object; print "<file>\t<json>" per line.
+  // history.json: [{ key, app, appIcon, summary, body, execArgv, urgency,
+  // ts (s), closed_ts (s), ... }]. fileName stays the row id the list uses.
   Process {
     id: reader
-    command: ["bash", "-c",
-      "for f in \"$1\"/*.json; do [[ -e $f ]] || continue; printf '%s\\t' \"${f##*/}\"; tr -d '\\n' < \"$f\"; echo; done",
-      "--", root.historyDir]
+    command: ["cat", root.historyFile]
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: {
         var list = []
-        var lines = String(text || "").split("\n")
-        for (var i = 0; i < lines.length; i++) {
-          var tab = lines[i].indexOf("\t")
-          if (tab < 0) continue
-          try {
-            var e = JSON.parse(lines[i].slice(tab + 1))
-            e.fileName = lines[i].slice(0, tab)
-            list.push(e)
-          } catch (err) {}
+        try { list = JSON.parse(String(text || "[]")) } catch (err) { list = [] }
+        if (!Array.isArray(list)) list = []
+        for (var i = 0; i < list.length; i++) {
+          var e = list[i]
+          e.fileName = String(e.key) + ":" + String(e.closed_ts)
+          e.timestamp = Number(e.ts || e.closed_ts || 0) * 1000
         }
-        list.sort(function(a, b) { return (b.timestamp || 0) - (a.timestamp || 0) })
+        list.sort(function(a, b) { return (b.closed_ts || 0) - (a.closed_ts || 0) })
         root.entries = list
       }
     }

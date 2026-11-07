@@ -157,15 +157,10 @@ Panel {
   // stepped towards (next = from the right) while fading up, instead of the
   // numbers snapping in place.
   property int stepDirection: 1
-  onViewDateChanged: if (root.opened) monthSwap.restart()
+  // The animation lives inside the panel content: Omarchy 4.5 loads panel
+  // content lazily, so ids in there aren't visible from here.
+  onViewDateChanged: if (root.opened && panel.loadedContent) panel.loadedContent.swapMonth()
 
-  ParallelAnimation {
-    id: monthSwap
-    NumberAnimation { target: gridShift; property: "x"; from: root.stepDirection * Style.space(18); to: 0; duration: 240; easing.type: Easing.OutCubic }
-    NumberAnimation { target: gridColumn; property: "opacity"; from: 0.15; to: 1; duration: 240; easing.type: Easing.OutCubic }
-    NumberAnimation { target: labelShift; property: "x"; from: root.stepDirection * Style.space(10); to: 0; duration: 240; easing.type: Easing.OutCubic }
-    NumberAnimation { target: monthLabel; property: "opacity"; from: 0.2; to: 1; duration: 240; easing.type: Easing.OutCubic }
-  }
 
   function moveYear(delta) {
     moveMonth(delta * 12)
@@ -283,6 +278,14 @@ Panel {
 
     content: PanelKeyCatcher {
       id: keyCatcher
+      function swapMonth() { monthSwap.restart() }
+      ParallelAnimation {
+        id: monthSwap
+        NumberAnimation { target: gridShift; property: "x"; from: root.stepDirection * Style.space(18); to: 0; duration: Style.duration(240); easing.type: Easing.OutCubic }
+        NumberAnimation { target: gridColumn; property: "opacity"; from: 0.15; to: 1; duration: Style.duration(240); easing.type: Easing.OutCubic }
+        NumberAnimation { target: labelShift; property: "x"; from: root.stepDirection * Style.space(10); to: 0; duration: Style.duration(240); easing.type: Easing.OutCubic }
+        NumberAnimation { target: monthLabel; property: "opacity"; from: 0.2; to: 1; duration: Style.duration(240); easing.type: Easing.OutCubic }
+      }
       property alias bornField: bornField
       property alias expectancyField: expectancyField
       implicitHeight: calendarColumn.implicitHeight

@@ -1,5 +1,4 @@
 import QtQuick
-import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Io
 import qs.Commons
@@ -12,47 +11,53 @@ import "../anik.bar"
 // the on-screen cards and the history.
 //
 // Standalone bar widgets can't reach the notification service object, so this
-// reads the service's own state files (one JSON per on-screen card, one per
-// history entry, and notifications.json for DND) and acts through its IPC.
+// reads the service's own state files (Omarchy 4.5 layout, written by
+// anik.notifications: live.json = cards on screen, history.json = closed ones,
+// quiet.json = Do Not Disturb) and acts through its IPC.
 BarWidget {
   id: root
   moduleName: "anik.bell"
 
   AnikPalette { id: themePalette }
 
-  readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/omarchy/"
+  readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/omarchy/notifications/"
 
-  FolderListModel {
-    id: onScreen
-    folder: "file://" + root.stateDir + "notifications"
-    nameFilters: ["*.json"]
-    showDirs: false
-  }
-
-  FolderListModel {
-    id: history
-    folder: "file://" + root.stateDir + "notifications/history"
-    nameFilters: ["*.json"]
-    showDirs: false
+  function parseList(text) {
+    try { var v = JSON.parse(text || "[]"); return Array.isArray(v) ? v : [] } catch (e) { return [] }
   }
 
   FileView {
-    id: settingsFile
-    path: root.stateDir + "notifications.json"
+    id: liveFile
+    path: root.stateDir + "live.json"
     watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+  }
+  FileView {
+    id: historyFile
+    path: root.stateDir + "history.json"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+  }
+  FileView {
+    id: quietFile
+    path: root.stateDir + "quiet.json"
+    watchChanges: true
+    printErrors: false
     onFileChanged: reload()
   }
   readonly property bool dnd: {
-    try { return JSON.parse(settingsFile.text()).dnd === true } catch (e) { return false }
+    try { return JSON.parse(quietFile.text()).dnd === true } catch (e) { return false }
   }
+  readonly property int onScreenCount: parseList(liveFile.text()).length
+  readonly property int historyCount: parseList(historyFile.text()).length
 
-  // Newest history entry, from its file name ("<ms timestamp>-<n>.json").
+  // Newest history entry (closed_ts is in seconds), in ms.
   readonly property double newest: {
+    var list = parseList(historyFile.text())
     var latest = 0
-    for (var i = 0; i < history.count; i++) {
-      var stamp = parseFloat(String(history.get(i, "fileName")).split("-")[0])
-      if (stamp > latest) latest = stamp
-    }
+    for (var i = 0; i < list.length; i++) latest = Math.max(latest, Number(list[i].closed_ts || 0) * 1000)
     return latest
   }
 
@@ -65,7 +70,7 @@ BarWidget {
   }
   Component.onCompleted: if (seen.at === 0) seen.at = Date.now()
 
-  readonly property bool unread: !dnd && (newest > seen.at || onScreen.count > 0)
+  readonly property bool unread: !dnd && (newest > seen.at || onScreenCount > 0)
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
@@ -97,7 +102,7 @@ BarWidget {
       Qt.callLater(root.injectPanel)
     }
     Binding { target: panelLoader.item; property: "dnd"; value: root.dnd; when: panelLoader.item !== null }
-    Binding { target: panelLoader.item; property: "historyCount"; value: history.count; when: panelLoader.item !== null }
+    Binding { target: panelLoader.item; property: "historyCount"; value: root.historyCount; when: panelLoader.item !== null }
   }
 
   BarIconButton {
@@ -109,14 +114,14 @@ BarWidget {
     // The panel is the detail view; no tooltip while it is open.
     tooltipText: root.opened ? "" : (root.dnd
       ? "Do Not Disturb is on · right click to turn off"
-      : (history.count > 0 ? history.count + " recent notification" + (history.count === 1 ? "" : "s") : "No notifications")
+      : (root.historyCount > 0 ? root.historyCount + " recent notification" + (root.historyCount === 1 ? "" : "s") : "No notifications")
         + " · right click: Do Not Disturb · middle click: clear")
     onPressed: function(b) {
       if (!root.bar) return
       if (b === Qt.RightButton) {
         root.bar.run("omarchy-shell notifications toggleDnd")
       } else if (b === Qt.MiddleButton) {
-        root.bar.run("sh -c 'omarchy-shell notifications dismissAll; omarchy-shell notifications clear'")
+        root.bar.run("sh -c 'omarchy-shell notifications dismissAll; omarchy-shell notifications clearHistory'")
         seen.at = Date.now()
       } else {
         if (panelLoader.item) panelLoader.item.toggle()

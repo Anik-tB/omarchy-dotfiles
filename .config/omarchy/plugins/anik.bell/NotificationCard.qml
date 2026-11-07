@@ -14,8 +14,8 @@ import Quickshell
 import qs.Commons
 import qs.Commons as Commons
 import qs.Ui
-import "../NotificationLogic.js" as NotificationLogic
-import "../../anik.bar"
+import "NotificationLogic.js" as NotificationLogic
+import "../anik.bar"
 
 BorderSurface {
   id: root
