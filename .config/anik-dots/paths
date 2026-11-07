@@ -36,5 +36,5 @@
 .local/bin/anik-drift
 .local/bin/anik-screensaver
 .local/bin/anik-screenrecord-pause
-.local/bin/omarchy-screensaver
+.local/share/anik-overrides
 .local/bin/type-to-search

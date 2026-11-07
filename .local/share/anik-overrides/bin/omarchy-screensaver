@@ -1,0 +1,7 @@
+#!/bin/bash
+# Override of Omarchy's omarchy-screensaver (the part that draws the effects).
+# ~/.config/hypr/overrides.lua puts this folder ahead of /usr/share/omarchy/bin,
+# so the stock launcher (omarchy-launch-screensaver: monitors, workspaces, window
+# rules) stays stock and keeps getting Omarchy's fixes; only the animation is ours.
+# Delete this file to get the stock screensaver back.
+exec ~/.local/share/anik-screensaver/run "$@"

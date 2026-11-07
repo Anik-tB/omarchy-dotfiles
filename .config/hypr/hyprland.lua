@@ -23,6 +23,7 @@ require("hypr.looknfeel")
 require("hypr.autostart")
 require("hypr.type-to-search")
 require("hypr.hidden-focus")
+require("hypr.overrides")
 
 -- Toggle config flags dynamically.
 require("default.hypr.toggles")

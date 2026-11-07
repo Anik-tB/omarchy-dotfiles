@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Anik screensaver runner, started by anik-screensaver (or by the stock
-# launcher if this dir is put ahead on the session PATH). Plays the
+# Anik screensaver runner. Started by Omarchy's stock launcher through the
+# ~/.local/bin/omarchy-screensaver override. Plays the
 # Omarchy logo from ~/.config/omarchy/branding/screensaver.txt through a
 # curated set of ttfx effects, every one recoloured in the Anik morpho violet
 # palette, then holds the finished logo for a beat before the next effect.

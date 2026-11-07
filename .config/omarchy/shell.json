@@ -72,13 +72,11 @@
     "transparent": true
   },
   "cloneSourceRestores": [
-    "anik.idle",
     "anik.notifications",
     "anik.osd",
     "anik.dock"
   ],
   "disabledPlugins": [
-    "omarchy.idle",
     "omarchy.notifications",
     "omarchy.osd",
     "omarchy.dock"
@@ -88,9 +86,6 @@
     "screensaver": 150
   },
   "plugins": [
-    {
-      "id": "anik.idle"
-    },
     {
       "id": "anik.notifications"
     },
