@@ -1,7 +1,6 @@
 # anik-drift watch list: things I copied or override, and the stock Omarchy
 # files they come from. Format:  name | my copy | stock paths (relative to /usr/share/omarchy)
 # After an Omarchy update, anik-drift reports every entry whose stock files changed.
-anik.agents        | ~/.config/omarchy/plugins/anik.agents        | shell/plugins/agents
 anik.audio         | ~/.config/omarchy/plugins/anik.audio         | shell/plugins/panels/audio
 anik.bar           | ~/.config/omarchy/plugins/anik.bar           | shell/plugins/bar
 anik.bluetooth     | ~/.config/omarchy/plugins/anik.bluetooth     | shell/plugins/panels/bluetooth
