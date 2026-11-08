@@ -363,6 +363,9 @@ Panel {
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
+  // Slot overlay hit-tests with a stale pointer position; matching via the
+  // root (slot.activeItem fallback) keeps the hand cursor reliable.
+  function triggerPress(b) { button.triggerPress(b) }
 
   Component.onCompleted: refresh()
 

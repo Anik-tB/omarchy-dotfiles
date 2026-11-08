@@ -506,6 +506,9 @@ Panel {
   visible: adapter !== null
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
+  // Slot overlay hit-tests with a stale pointer position; matching via the
+  // root (slot.activeItem fallback) keeps the hand cursor reliable.
+  function triggerPress(b) { button.triggerPress(b) }
 
   // BlueZ rejects StartDiscovery while the adapter is still powering up, and
   // discovery can also time out on its own. While the panel is open, keep
