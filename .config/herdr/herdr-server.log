@@ -114,3 +114,18 @@
 2026-11-07T16:33:35.394285Z  INFO herdr::logging: update available event="update.available" subsystem="update" outcome="ok" version="0.9.5"
 2026-11-07T16:33:35.394351Z  INFO herdr::update: new stable build available at https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64
 2026-11-07T16:33:35.395864Z  INFO herdr::update: auto-update check: 0.9.5 available, waiting for explicit install
+2026-11-07T18:01:25.921104Z  INFO herdr::server::headless::lifecycle: server shutdown initiated
+2026-11-07T18:01:25.971213Z  INFO herdr::server::headless::lifecycle: completing server shutdown
+2026-11-07T18:01:25.971390Z  INFO herdr::logging: session cleared event="persist.clear" subsystem="persist" outcome="ok" path=/home/anik/.config/herdr/session.json
+2026-11-07T18:01:25.971424Z  INFO herdr::server::headless: headless server exiting
+2026-11-07T18:01:25.972686Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="server" outcome="completed" pid=1089
+2026-11-08T12:53:45.340249Z  INFO herdr::api::server: api server listening path=/home/anik/.config/herdr/herdr.sock
+2026-11-08T12:53:45.343401Z  INFO herdr::persist::io: session file is missing event="persist.restore" subsystem="persist" outcome="missing" path=/home/anik/.config/herdr/session.json
+2026-11-08T12:53:45.343450Z  INFO herdr::app: using pane scrollback configuration pane_scrollback_limit_bytes=10000000
+2026-11-08T12:53:45.514621Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-08T12:53:45.515595Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
+2026-11-08T12:53:45.515684Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
+2026-11-08T12:53:45.515739Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1091
+2026-11-08T12:53:45.626337Z  INFO herdr::logging: update available event="update.available" subsystem="update" outcome="ok" version="0.9.5"
+2026-11-08T12:53:45.626393Z  INFO herdr::update: new stable build available at https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64
+2026-11-08T12:53:45.626945Z  INFO herdr::update: auto-update check: 0.9.5 available, waiting for explicit install
