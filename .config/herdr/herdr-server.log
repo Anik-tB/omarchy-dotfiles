@@ -129,3 +129,53 @@
 2026-11-08T12:53:45.626337Z  INFO herdr::logging: update available event="update.available" subsystem="update" outcome="ok" version="0.9.5"
 2026-11-08T12:53:45.626393Z  INFO herdr::update: new stable build available at https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64
 2026-11-08T12:53:45.626945Z  INFO herdr::update: auto-update check: 0.9.5 available, waiting for explicit install
+2026-11-08T15:59:27.160335Z  INFO herdr::server::headless::lifecycle: server shutdown initiated
+2026-11-08T15:59:27.210559Z  INFO herdr::server::headless::lifecycle: completing server shutdown
+2026-11-08T15:59:27.210937Z  INFO herdr::logging: session cleared event="persist.clear" subsystem="persist" outcome="ok" path=/home/anik/.config/herdr/session.json
+2026-11-08T15:59:27.210977Z  INFO herdr::server::headless: headless server exiting
+2026-11-08T15:59:27.229820Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="server" outcome="completed" pid=1091
+2026-11-09T03:16:13.855806Z  INFO herdr::api::server: api server listening path=/home/anik/.config/herdr/herdr.sock
+2026-11-09T03:16:13.857180Z  INFO herdr::persist::io: session file is missing event="persist.restore" subsystem="persist" outcome="missing" path=/home/anik/.config/herdr/session.json
+2026-11-09T03:16:13.857215Z  INFO herdr::app: using pane scrollback configuration pane_scrollback_limit_bytes=10000000
+2026-11-09T03:16:14.002356Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-09T03:16:14.002953Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
+2026-11-09T03:16:14.003075Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
+2026-11-09T03:16:14.003141Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1104
+2026-11-09T03:16:17.209908Z  INFO herdr::logging: update available event="update.available" subsystem="update" outcome="ok" version="0.9.5"
+2026-11-09T03:16:17.209972Z  INFO herdr::update: new stable build available at https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64
+2026-11-09T03:16:17.210528Z  INFO herdr::update: auto-update check: 0.9.5 available, waiting for explicit install
+2026-11-09T06:16:17.034732Z  WARN herdr::detect::manifest_update: agent detection manifest update failed: failed to fetch https://herdr.dev/agent-detection/index.toml
+2026-11-09T06:46:17.036957Z  WARN herdr::detect::manifest_update: agent detection manifest update failed: failed to fetch https://herdr.dev/agent-detection/index.toml
+2026-11-09T07:16:17.040284Z  WARN herdr::detect::manifest_update: agent detection manifest update failed: failed to fetch https://herdr.dev/agent-detection/index.toml
+2026-11-09T07:46:17.041207Z  WARN herdr::detect::manifest_update: agent detection manifest update failed: failed to fetch https://herdr.dev/agent-detection/index.toml
+2026-11-09T09:46:52.062489Z  WARN herdr::detect::manifest_update: agent detection manifest update failed: failed to fetch https://herdr.dev/agent-detection/index.toml
+2026-11-09T10:17:28.613061Z  INFO herdr::server::headless::lifecycle: server shutdown initiated
+2026-11-09T10:17:28.665176Z  INFO herdr::server::headless::lifecycle: completing server shutdown
+2026-11-09T10:17:28.665549Z  INFO herdr::logging: session cleared event="persist.clear" subsystem="persist" outcome="ok" path=/home/anik/.config/herdr/session.json
+2026-11-09T10:17:28.665603Z  INFO herdr::server::headless: headless server exiting
+2026-11-09T10:17:28.671813Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="server" outcome="completed" pid=1104
+2026-11-09T11:43:08.959991Z  INFO herdr::api::server: api server listening path=/home/anik/.config/herdr/herdr.sock
+2026-11-09T11:43:08.963500Z  INFO herdr::persist::io: session file is missing event="persist.restore" subsystem="persist" outcome="missing" path=/home/anik/.config/herdr/session.json
+2026-11-09T11:43:08.963553Z  INFO herdr::app: using pane scrollback configuration pane_scrollback_limit_bytes=10000000
+2026-11-09T11:43:09.100092Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-09T11:43:09.100849Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
+2026-11-09T11:43:09.100912Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
+2026-11-09T11:43:09.100949Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1060
+2026-11-09T11:43:10.758055Z  INFO herdr::logging: update available event="update.available" subsystem="update" outcome="ok" version="0.9.5"
+2026-11-09T11:43:10.758082Z  INFO herdr::update: new stable build available at https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64
+2026-11-09T11:43:10.758334Z  INFO herdr::update: auto-update check: 0.9.5 available, waiting for explicit install
+2026-11-09T12:45:43.691267Z  INFO herdr::server::headless::lifecycle: server shutdown initiated
+2026-11-09T12:45:43.742859Z  INFO herdr::server::headless::lifecycle: completing server shutdown
+2026-11-09T12:45:43.746585Z  INFO herdr::logging: session cleared event="persist.clear" subsystem="persist" outcome="ok" path=/home/anik/.config/herdr/session.json
+2026-11-09T12:45:43.746709Z  INFO herdr::server::headless: headless server exiting
+2026-11-09T12:45:43.750968Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="server" outcome="completed" pid=1060
+2026-11-10T14:26:31.158188Z  INFO herdr::api::server: api server listening path=/home/anik/.config/herdr/herdr.sock
+2026-11-10T14:26:31.162565Z  INFO herdr::persist::io: session file is missing event="persist.restore" subsystem="persist" outcome="missing" path=/home/anik/.config/herdr/session.json
+2026-11-10T14:26:31.162606Z  INFO herdr::app: using pane scrollback configuration pane_scrollback_limit_bytes=10000000
+2026-11-10T14:26:31.301054Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-10T14:26:31.301932Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
+2026-11-10T14:26:31.302001Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
+2026-11-10T14:26:31.302052Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1095
+2026-11-10T14:26:33.848298Z  INFO herdr::logging: update available event="update.available" subsystem="update" outcome="ok" version="0.9.5"
+2026-11-10T14:26:33.848406Z  INFO herdr::update: new stable build available at https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64
+2026-11-10T14:26:33.849679Z  INFO herdr::update: auto-update check: 0.9.5 available, waiting for explicit install
