@@ -101,6 +101,9 @@
     },
     {
       "id": "anik.dock"
+    },
+    {
+      "id": "io.voxtype.settings"
     }
   ],
   "version": 1
