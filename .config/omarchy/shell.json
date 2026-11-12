@@ -1,47 +1,14 @@
 {
   "bar": {
+    "background": "none",
     "id": "anik.bar",
     "layout": {
       "center": [
         {
-          "id": "anik.clock",
           "format": "dddd h:mm AP",
           "formatAlt": "dddd d MMMM yyyy",
+          "id": "anik.clock",
           "verticalFormat": "HH\n—\nmm"
-        }
-      ],
-      "left": [
-        {
-          "id": "omarchy.menu"
-        },
-        {
-          "id": "anik.workspaces"
-        }
-      ],
-      "right": [
-        {
-          "id": "anik.tray"
-        },
-        {
-          "id": "omarchy.keyboard-layout"
-        },
-        {
-          "id": "omarchy.agents"
-        },
-        {
-          "id": "anik.audio"
-        },
-        {
-          "id": "anik.network"
-        },
-        {
-          "id": "anik.bluetooth"
-        },
-        {
-          "id": "anik.monitor"
-        },
-        {
-          "id": "anik.bell"
         }
       ],
       "centerBegin": [
@@ -67,10 +34,43 @@
           "showPercentage": true
         }
       ],
+      "left": [
+        {
+          "id": "omarchy.menu"
+        },
+        {
+          "id": "anik.workspaces"
+        }
+      ],
+      "right": [
+        {
+          "id": "anik.tray"
+        },
+        {
+          "id": "omarchy.keyboard-layout"
+        },
+        {
+          "id": "anik.agents"
+        },
+        {
+          "id": "anik.audio"
+        },
+        {
+          "id": "anik.network"
+        },
+        {
+          "id": "anik.bluetooth"
+        },
+        {
+          "id": "anik.monitor"
+        },
+        {
+          "id": "anik.bell"
+        }
+      ],
       "tray": []
     },
-    "position": "top",
-    "transparent": true
+    "position": "top"
   },
   "cloneSourceRestores": [
     "anik.notifications",
