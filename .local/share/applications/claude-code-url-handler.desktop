@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Claude Code URL Handler
 Comment=Handle claude-cli:// deep links for Claude Code
-Exec="/home/anik/.local/share/mise/installs/claude/2.1.322/claude" --handle-uri %u
+Exec="/home/anik/.local/share/mise/installs/claude/2.1.323/claude" --handle-uri %u
 Type=Application
 NoDisplay=true
 MimeType=x-scheme-handler/claude-cli;
