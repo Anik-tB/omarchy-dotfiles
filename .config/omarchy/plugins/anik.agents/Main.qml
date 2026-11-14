@@ -149,8 +149,11 @@ Item {
     interval: root.nearLimit ? Math.min(180, root.refreshIntervalSec) * 1000 : root.refreshIntervalSec * 1000
     running: true
     repeat: true
-    triggeredOnStart: true
-    onTriggered: root.runUpdate(root.nearLimit ? "limits" : "normal")
+    triggeredOnStart: false
+    onTriggered: {
+      var ids = root.activeAgentIds()
+      root.runUpdate(root.nearLimit ? "limits" : "normal", ids.length > 0 ? ids : undefined)
+    }
   }
 
   Process {
@@ -170,6 +173,15 @@ Item {
       waitForEnd: true
       onStreamFinished: if (text.trim() !== "") console.warn("agents", text.trim())
     }
+  }
+
+  function activeAgentIds() {
+    var ids = []
+    var list = subscribedProviders
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].providerId) ids.push(list[i].providerId)
+    }
+    return ids
   }
 
   function updateCommand(kind, agentIds) {
@@ -198,12 +210,18 @@ Item {
   }
 
   function refresh() { refreshAll(true) }
-  function refreshAll(force) { runUpdate(force === true ? "force" : "normal") }
+  function refreshAll(force) {
+    var ids = activeAgentIds()
+    runUpdate(force === true ? "force" : "normal", ids.length > 0 ? ids : undefined)
+  }
 
   // Opening the panel wants the numbers that go stale on the wire, not
   // another walk over every transcript on disk — the collectors reuse their
   // recent scans in this mode.
-  function refreshLimits() { runUpdate("limits") }
+  function refreshLimits(agentIds) {
+    var ids = (agentIds && agentIds.length > 0) ? agentIds : activeAgentIds()
+    runUpdate("limits", ids.length > 0 ? ids : undefined)
+  }
 
   // ------------------------------------------------------------- providers
 

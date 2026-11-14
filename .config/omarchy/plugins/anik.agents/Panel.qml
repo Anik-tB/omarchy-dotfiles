@@ -91,7 +91,7 @@ Panel {
           if (row.length > 0) rows.push(row)
         }
       }
-      if (!blankSlate) {
+      if (!blankSlate && starterPrompts.length > 0) {
         var tiles = []
         for (var j = 0; j < starterPrompts.length; j++) tiles.push({ kind: "starter", index: j })
         rows.push(tiles)
@@ -229,6 +229,7 @@ Panel {
   }
 
   function refreshNow() {
+    lastLimitsRefreshMs = Date.now()
     usage.refreshAll(true)
   }
 
@@ -345,12 +346,8 @@ Panel {
     Util.execArgv(addPrivate ? ["omarchy-launch-browser", "--private", addUrl] : ["omarchy-launch-browser", addUrl])
   }
 
-  // A few ways into making Omarchy your own, handed to the default agent.
-  readonly property var starterPrompts: [
-    { glyph: "󰏘", label: Commons.I18n.t("agents.theme"), prompt: "Make me a new Omarchy theme. Ask me what look or inspiration I have in mind, then build it following the Omarchy skill's theming guide and switch to it." },
-    { glyph: "󰐱", label: Commons.I18n.t("agents.plugin"), prompt: "Make me a new Omarchy shell plugin. Ask me what I'd like it to do, then build it following the Omarchy skill's plugin guide and enable it." },
-    { glyph: "󰣆", label: Commons.I18n.t("agents.app"), prompt: "Make me a new app for my Omarchy desktop. Ask me what it should do, then build it following the omarchy-app skill and install it so it shows up in the app launcher." }
-  ]
+  // Starter prompts: disabled for clean, lightweight, and professional look.
+  readonly property var starterPrompts: []
 
   function startPrompt(prompt) {
     root.close()
@@ -755,9 +752,6 @@ Panel {
     var topModel = ""
     for (var model in byModel) if (topModel === "" || byModel[model] > byModel[topModel]) topModel = model
     if (topModel !== "" && byModel[topModel] > 0) phrases.push(Commons.I18n.t("agents.mostlyModel").arg(topModel))
-    var busiest = ""
-    for (var date in byDay) if (busiest === "" || byDay[date] > byDay[busiest]) busiest = date
-    if (busiest !== "" && byDay[busiest] > 0) phrases.push(Commons.I18n.t("agents.busiestDay").arg(dayName(busiest)))
     if (prompts > 0) phrases.push(Commons.I18n.tn("agents.promptsToday", prompts).arg(Commons.I18n.formatNumber(prompts)))
     if (sessions > 0) phrases.push(Commons.I18n.tn("agents.sessionsToday", sessions).arg(Commons.I18n.formatNumber(sessions)))
     return phrases
@@ -767,9 +761,15 @@ Panel {
   // refreshes each agent in turn. Indexing the live list would swap the line
   // on each of those, so the hero holds what it shows until the next fade.
   property string shownPhrase: ""
+  readonly property string defaultHeroSubtitle: {
+    var count = providers ? providers.length : 0
+    if (count === 1) return "1 active subscription"
+    if (count > 1) return count + " active subscriptions"
+    return Commons.I18n.t("agents.subscriptions")
+  }
   readonly property string heroPhrase: addStage !== "" || blankSlate
     ? addHeading
-    : (shownPhrase !== "" ? shownPhrase : Commons.I18n.t("agents.subscriptions"))
+    : (shownPhrase !== "" ? shownPhrase : defaultHeroSubtitle)
 
   function showPhrase() {
     var n = summaryPhrases.length
@@ -873,13 +873,28 @@ Panel {
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
+  property real lastLimitsRefreshMs: 0
+
+  Timer {
+    id: openRefreshTimer
+    interval: 600
+    repeat: false
+    onTriggered: {
+      var now = Date.now()
+      if (now - root.lastLimitsRefreshMs > 120000) {
+        root.lastLimitsRefreshMs = now
+        usage.refreshLimits()
+      }
+    }
+  }
+
   onOpenedChanged: if (opened) {
     if (addStage !== "running") addStage = ""
     resetKeys()
     if (usage.enabledProviders.length === 0 && !checkProcess.running) checkProcess.running = true
     nowMs = Date.now()
     if (panelFlick) panelFlick.contentY = 0
-    usage.refreshLimits()
+    openRefreshTimer.restart()
     Qt.callLater(function() { if (panel.loadedContent) panel.loadedContent.forceActiveFocus() })
   }
 
@@ -932,7 +947,7 @@ Panel {
   }
 
   Timer {
-    interval: 2800
+    interval: 5000
     running: root.opened && root.summaryPhrases.length > 1 && root.addStage === "" && !root.blankSlate
     repeat: true
     onTriggered: phraseSwap.restart()
@@ -966,12 +981,24 @@ Panel {
     function refresh(): string { root.refreshNow(); return "ok" }
   }
 
+  Timer {
+    id: preloadTimer
+    interval: 1500
+    running: true
+    repeat: false
+    onTriggered: if (!panel.contentRequested) panel.contentRequested = true
+  }
+
   BarIconButton {
     id: button
     anchors.fill: parent
     bar: root.bar
     text: "󱚣"
     active: root.alarming
+    onTooltipHoveredChanged: if (tooltipHovered && !panel.contentRequested) panel.contentRequested = true
+    HoverHandler {
+      onHoveredChanged: if (hovered && !panel.contentRequested) panel.contentRequested = true
+    }
     onPressed: function(buttonCode) {
       if (buttonCode === Qt.RightButton) root.launchAgent()
       else if (buttonCode === Qt.MiddleButton) root.refreshNow()
@@ -1112,40 +1139,7 @@ Panel {
             }
           }
 
-          // ---------- Make something ----------
-          Column {
-            visible: root.addStage === "" && !root.blankSlate
-            width: parent.width
-            topPadding: Style.space(6)
-            spacing: Style.space(10)
-
-            PanelSectionHeader {
-              text: Commons.I18n.t("agents.makeSomethingCool")
-              foreground: root.foreground
-              fontFamily: root.fontFamily
-            }
-
-            Row {
-              id: tileRow
-              width: parent.width
-              spacing: Style.space(10)
-
-              Repeater {
-                model: root.starterPrompts
-
-                StarterTile {
-                  required property var modelData
-                  required property int index
-                  hasCursor: root.hasKey("starter", index)
-                  onHovered: root.pointAt("starter", index)
-                  width: (tileRow.width - tileRow.spacing * 2) / 3
-                  glyph: modelData.glyph
-                  title: modelData.label
-                  onClicked: root.startPrompt(modelData.prompt)
-                }
-              }
-            }
-          }
+          // Make something cool: removed for clean, professional, compact presentation
 
           Text {
             textFormat: Text.PlainText

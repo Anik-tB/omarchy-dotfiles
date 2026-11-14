@@ -333,3 +333,8 @@
 2026-11-14T03:38:20.980611Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
 2026-11-14T04:08:20.982198Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
 2026-11-14T04:38:20.983910Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-14T14:28:09.719340Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-14T14:58:10.546954Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-14T15:28:10.548684Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-14T15:58:10.550903Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-14T16:28:10.552661Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
