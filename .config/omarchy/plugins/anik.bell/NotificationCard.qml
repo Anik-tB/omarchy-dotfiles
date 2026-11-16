@@ -46,7 +46,7 @@ BorderSurface {
   // Text face: the same clean sans as the bar.
   readonly property string textFamily: "Adwaita Sans"
 
-  readonly property bool hovered: hoverTracker.hovered
+  readonly property bool hovered: hoverTracker.hovered || cardMouseArea.containsMouse
 
   signal closeRequested()
   signal cardClicked()
@@ -147,7 +147,9 @@ BorderSurface {
   }
 
   MouseArea {
+    id: cardMouseArea
     anchors.fill: parent
+    hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
     onClicked: function(mouse) {
@@ -256,13 +258,68 @@ BorderSurface {
           maximumLineCount: 1
         }
 
-        Text {
-          textFormat: Text.PlainText
-          visible: root.timeText.length > 0
-          text: root.timeText
-          font.family: root.textFamily
-          font.pixelSize: Style.font.bodySmall
-          color: root.metaColor
+        Item {
+          id: trailingSlot
+          Layout.alignment: Qt.AlignVCenter
+          implicitWidth: Math.max(timeLabel.implicitWidth, closeButton.implicitWidth)
+          implicitHeight: Math.max(timeLabel.implicitHeight, closeButton.implicitHeight)
+
+          readonly property bool closeHovered: closeArea.containsMouse
+          readonly property bool showClose: root.hovered || closeHovered
+
+          Text {
+            id: timeLabel
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            textFormat: Text.PlainText
+            visible: root.timeText.length > 0 && opacity > 0.01
+            text: root.timeText
+            font.family: root.textFamily
+            font.pixelSize: Style.font.bodySmall
+            color: root.metaColor
+            opacity: trailingSlot.showClose ? 0 : 1
+            Behavior on opacity { NumberAnimation { duration: Style.duration(140); easing.type: Easing.InOutQuad } }
+          }
+
+          Rectangle {
+            id: closeButton
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            implicitWidth: Style.space(22)
+            implicitHeight: Style.space(22)
+            radius: width / 2
+            color: closeArea.containsMouse
+              ? Qt.rgba(themePalette.text.r, themePalette.text.g, themePalette.text.b, 0.22)
+              : (closeArea.pressed ? Qt.rgba(themePalette.text.r, themePalette.text.g, themePalette.text.b, 0.35) : "transparent")
+            opacity: trailingSlot.showClose ? 1 : 0
+            visible: opacity > 0.01
+            enabled: opacity > 0.01
+            Behavior on opacity { NumberAnimation { duration: Style.duration(140); easing.type: Easing.InOutQuad } }
+            Behavior on color { ColorAnimation { duration: Style.duration(100) } }
+
+            Text {
+              id: closeMark
+              anchors.centerIn: parent
+              textFormat: Text.PlainText
+              text: "✕"
+              font.family: root.textFamily
+              font.pixelSize: Math.round(Style.font.caption * 1.3)
+              color: closeArea.containsMouse ? themePalette.textBright : root.metaColor
+            }
+
+            MouseArea {
+              id: closeArea
+              anchors.fill: parent
+              anchors.margins: -Style.space(4)
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              acceptedButtons: Qt.LeftButton
+              onClicked: function(mouse) {
+                mouse.accepted = true
+                root.closeRequested()
+              }
+            }
+          }
         }
       }
 
@@ -307,49 +364,7 @@ BorderSurface {
     }
   }
 
-  // Close button: a small round chip at the top-left corner, shown on hover
-  // (as on macOS). Declared after the card MouseArea so it takes the click.
-  Rectangle {
-    id: closeButton
-    x: root.borderLeft + Style.space(5)
-    y: root.borderTop + Style.space(5)
-    width: Style.space(20)
-    height: width
-    radius: width / 2
-    color: closeArea.containsMouse
-      ? Qt.rgba(themePalette.text.r, themePalette.text.g, themePalette.text.b, 0.28)
-      : Qt.rgba(themePalette.deep.r, themePalette.deep.g, themePalette.deep.b, 0.92)
-    border.width: 1
-    border.color: Qt.rgba(1, 1, 1, 0.16)
-    opacity: root.hovered ? 1 : 0
-    visible: opacity > 0
-    Behavior on opacity { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
-    Behavior on color { ColorAnimation { duration: 120 } }
 
-    // Two drawn strokes rather than a "✕" glyph, whose font metrics sit it
-    // off-centre in the button.
-    Repeater {
-      model: [45, -45]
-      Rectangle {
-        required property int modelData
-        anchors.centerIn: parent
-        width: Style.space(8)
-        height: Math.max(1, Style.space(1.5))
-        radius: height / 2
-        rotation: modelData
-        antialiasing: true
-        color: themePalette.textBright
-      }
-    }
-
-    MouseArea {
-      id: closeArea
-      anchors.fill: parent
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
-      onClicked: root.closeRequested()
-    }
-  }
 
   component CardButton: Rectangle {
     id: cardButton
