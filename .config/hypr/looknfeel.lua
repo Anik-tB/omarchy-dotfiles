@@ -47,7 +47,7 @@ hl.config({
     },
 
     render = {
-        direct_scanout = 2,
+        direct_scanout = 0,
     },
 
     cursor = {
@@ -187,9 +187,9 @@ hl.animation({
 hl.animation({
     leaf = "workspaces",
     enabled = true,
-    speed = 2.5,
+    speed = 3.5,
     bezier = "easeOutQuint",
-    style = "slidefade 10%",
+    style = "slide",
 })
 
 hl.animation({
