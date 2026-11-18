@@ -1,6 +1,6 @@
 {
   "bar": {
-    "background": "none",
+    "background": "glassy",
     "id": "anik.bar",
     "layout": {
       "center": [
