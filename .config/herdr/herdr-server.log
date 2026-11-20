@@ -594,3 +594,58 @@
 2026-11-19T08:14:57.271346Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
 2026-11-19T08:14:57.271429Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
 2026-11-19T08:14:57.271482Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1096
+2026-11-19T08:44:57.273225Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T09:14:57.275248Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T09:44:57.275851Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T09:53:47.621226Z  INFO herdr::platform::linux::shutdown: host shutdown requested; preserving session before pane termination
+2026-11-19T09:53:47.621312Z  INFO herdr::server::headless::lifecycle: server shutdown initiated reason=host shutdown
+2026-11-19T09:53:47.671469Z  INFO herdr::server::headless::lifecycle: completing server shutdown
+2026-11-19T09:53:47.671713Z  INFO herdr::logging: session cleared event="persist.clear" subsystem="persist" outcome="ok" path=/home/anik/.config/herdr/session.json
+2026-11-19T09:53:47.671728Z  INFO herdr::server::headless: headless server exiting
+2026-11-19T09:53:47.672844Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="server" outcome="completed" pid=1096
+2026-11-19T11:59:53.745643Z  INFO herdr::api::server: api server listening path=/home/anik/.config/herdr/herdr.sock
+2026-11-19T11:59:53.749999Z  INFO herdr::persist::io: session file is missing event="persist.restore" subsystem="persist" outcome="missing" path=/home/anik/.config/herdr/session.json
+2026-11-19T11:59:53.750099Z  INFO herdr::app: using pane scrollback configuration pane_scrollback_limit_bytes=10000000
+2026-11-19T11:59:53.862185Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T11:59:53.862724Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
+2026-11-19T11:59:53.862788Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
+2026-11-19T11:59:53.862833Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1172
+2026-11-19T12:29:53.864107Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T12:59:53.865550Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T13:29:53.866534Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T13:59:53.868485Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T14:29:53.869313Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T14:59:53.870818Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T15:29:53.871373Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T15:59:53.873450Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T16:29:53.874605Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T16:59:53.874894Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-19T17:02:15.831100Z  INFO herdr::platform::linux::shutdown: host shutdown requested; preserving session before pane termination
+2026-11-19T17:02:15.831172Z  INFO herdr::server::headless::lifecycle: server shutdown initiated reason=host shutdown
+2026-11-19T17:02:15.881291Z  INFO herdr::server::headless::lifecycle: completing server shutdown
+2026-11-19T17:02:15.881689Z  INFO herdr::logging: session cleared event="persist.clear" subsystem="persist" outcome="ok" path=/home/anik/.config/herdr/session.json
+2026-11-19T17:02:15.881739Z  INFO herdr::server::headless: headless server exiting
+2026-11-19T17:02:15.883534Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="server" outcome="completed" pid=1172
+2026-11-20T02:36:21.272154Z  INFO herdr::api::server: api server listening path=/home/anik/.config/herdr/herdr.sock
+2026-11-20T02:36:21.278443Z  INFO herdr::persist::io: session file is missing event="persist.restore" subsystem="persist" outcome="missing" path=/home/anik/.config/herdr/session.json
+2026-11-20T02:36:21.278587Z  INFO herdr::app: using pane scrollback configuration pane_scrollback_limit_bytes=10000000
+2026-11-20T02:36:21.459439Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-20T02:36:21.460321Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
+2026-11-20T02:36:21.460409Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
+2026-11-20T02:36:21.460482Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1095
+2026-11-20T03:06:21.461318Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-20T03:36:21.462398Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-20T04:06:21.462864Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-20T04:34:09.684694Z  INFO herdr::platform::linux::shutdown: host shutdown requested; preserving session before pane termination
+2026-11-20T04:34:09.684764Z  INFO herdr::server::headless::lifecycle: server shutdown initiated reason=host shutdown
+2026-11-20T04:34:09.735040Z  INFO herdr::server::headless::lifecycle: completing server shutdown
+2026-11-20T04:34:09.735181Z  INFO herdr::logging: session cleared event="persist.clear" subsystem="persist" outcome="ok" path=/home/anik/.config/herdr/session.json
+2026-11-20T04:34:09.735194Z  INFO herdr::server::headless: headless server exiting
+2026-11-20T04:34:09.735919Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="server" outcome="completed" pid=1095
+2026-11-20T08:22:28.940340Z  INFO herdr::api::server: api server listening path=/home/anik/.config/herdr/herdr.sock
+2026-11-20T08:22:28.946166Z  INFO herdr::persist::io: session file is missing event="persist.restore" subsystem="persist" outcome="missing" path=/home/anik/.config/herdr/session.json
+2026-11-20T08:22:28.946357Z  INFO herdr::app: using pane scrollback configuration pane_scrollback_limit_bytes=10000000
+2026-11-20T08:22:29.142178Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-20T08:22:29.142835Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
+2026-11-20T08:22:29.142913Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
+2026-11-20T08:22:29.142990Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1171
