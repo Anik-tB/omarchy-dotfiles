@@ -13,6 +13,13 @@ source "$OMARCHY_PATH/default/bash/rc"
 
 # Add your own exports, aliases, and functions here.
 #
+# Modern ls with headers and icons (via eza)
+alias ls='eza -h --icons=auto --group-directories-first'
+alias ll='eza -lh --icons=auto --group-directories-first'
+alias la='eza -h -a --icons=auto --group-directories-first'
+alias lla='eza -lh -a --icons=auto --group-directories-first'
+umask 002
+
 # Make an alias for invoking commands you use constantly
 # alias p='python'
 export PATH="$HOME/.config/composer/vendor/bin:$PATH"
