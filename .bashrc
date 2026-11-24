@@ -38,4 +38,6 @@ if [[ $- == *i* ]]; then
   bind 'set show-all-if-ambiguous off'
   bind 'set show-all-if-unmodified off'
   bind 'set enable-bracketed-paste on'
+  export HISTCONTROL=ignoreboth:erasedups
+  shopt -s globstar 2>/dev/null
 fi

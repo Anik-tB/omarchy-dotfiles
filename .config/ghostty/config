@@ -71,8 +71,12 @@ keybind = ctrl+shift+arrow_down=jump_to_prompt:1
 # Ctrl+Shift+X wipes screen + scrollback
 keybind = ctrl+shift+x=clear_screen
 
-# Slowdown mouse scrolling
-mouse-scroll-multiplier = 0.95
+# Responsive and accurate mouse scrolling
+mouse-scroll-multiplier = precision:1,discrete:3
+scroll-to-bottom = keystroke,no-output
 
-# Fix general slowness on hyprland (https://github.com/ghostty-org/ghostty/discussions/3224)
+# Performance & Responsiveness
 async-backend = epoll
+gtk-single-instance = true
+window-vsync = true
+cursor-click-to-move = true

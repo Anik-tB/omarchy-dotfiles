@@ -113,7 +113,7 @@ format = "[$symbol$number]($style) "
 style = "#e2d8fb"
 
 [sudo]
-disabled = false
+disabled = true
 symbol = " "
 format = "[$symbol]($style)"
 style = "#e59a7a"
