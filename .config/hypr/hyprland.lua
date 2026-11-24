@@ -37,3 +37,7 @@ o.window({ class = "org.omarchy.btop", tag = "floating-window" }, { size = { 128
 
 -- Square corners on popped-out (SUPER+O) windows; Omarchy defaults them to 8.
 o.window({ tag = "pop" }, { rounding = 0 })
+
+-- Disable animations for VS Code and code editors on Intel UHD 620 for instant, lag-free open/close
+o.window("([cC]ode|com\\.microsoft\\.VSCode|antigravity-ide)", { no_anim = true, animation = "none" })
+

@@ -111,11 +111,7 @@ BarWidget {
     bar: root.bar
     text: root.dnd ? "󰂛" : (root.unread ? "󰂚" : "󰂜")
     dimmed: root.dnd
-    // The panel is the detail view; no tooltip while it is open.
-    tooltipText: root.opened ? "" : (root.dnd
-      ? "Do Not Disturb is on · right click to turn off"
-      : (root.historyCount > 0 ? root.historyCount + " recent notification" + (root.historyCount === 1 ? "" : "s") : "No notifications")
-        + " · right click: Do Not Disturb · middle click: clear")
+    tooltipText: ""
     onPressed: function(b) {
       if (!root.bar) return
       if (b === Qt.RightButton) {
