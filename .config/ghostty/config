@@ -23,7 +23,7 @@ unfocused-split-opacity = 0.78
 split-divider-color = #2e2842
 
 # Cursor styling
-cursor-style = "block"
+cursor-style = "bar"
 cursor-style-blink = false
 cursor-color = #7d95f5
 cursor-text = #14111e
