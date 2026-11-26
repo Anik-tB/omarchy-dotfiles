@@ -82,6 +82,9 @@
     "omarchy.osd",
     "omarchy.dock"
   ],
+  "dock": {
+    "autohide": false
+  },
   "idle": {
     "lock": 300,
     "screensaver": 150
