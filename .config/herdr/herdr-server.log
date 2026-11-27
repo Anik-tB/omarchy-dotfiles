@@ -930,3 +930,32 @@
 2026-11-27T03:26:02.701450Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
 2026-11-27T03:26:02.701644Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
 2026-11-27T03:26:02.701756Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1111
+2026-11-27T03:56:03.141107Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T04:26:03.142360Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T04:56:03.143733Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T05:26:03.145028Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T05:56:03.146876Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T06:26:03.148210Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T06:56:03.149672Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T06:56:56.995056Z  INFO herdr::platform::linux::shutdown: host shutdown requested; preserving session before pane termination
+2026-11-27T06:56:56.995130Z  INFO herdr::server::headless::lifecycle: server shutdown initiated reason=host shutdown
+2026-11-27T06:56:57.045375Z  INFO herdr::server::headless::lifecycle: completing server shutdown
+2026-11-27T06:56:57.045552Z  INFO herdr::logging: session cleared event="persist.clear" subsystem="persist" outcome="ok" path=/home/anik/.config/herdr/session.json
+2026-11-27T06:56:57.045569Z  INFO herdr::server::headless: headless server exiting
+2026-11-27T06:56:57.046382Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="server" outcome="completed" pid=1111
+2026-11-27T08:22:22.367114Z  INFO herdr::api::server: api server listening path=/home/anik/.config/herdr/herdr.sock
+2026-11-27T08:22:22.370185Z  INFO herdr::persist::io: session file is missing event="persist.restore" subsystem="persist" outcome="missing" path=/home/anik/.config/herdr/session.json
+2026-11-27T08:22:22.370290Z  INFO herdr::app: using pane scrollback configuration pane_scrollback_limit_bytes=10000000
+2026-11-27T08:22:22.584999Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T08:22:22.587448Z  INFO herdr::server::headless: client protocol socket listening path=/home/anik/.config/herdr/herdr-client.sock
+2026-11-27T08:22:22.588382Z  INFO herdr::server::headless::bootstrap: herdr server started api_socket=/home/anik/.config/herdr/herdr.sock client_socket=/home/anik/.config/herdr/herdr-client.sock
+2026-11-27T08:22:22.588563Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="server" outcome="started" pid=1084
+2026-11-27T08:52:22.119228Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T09:22:22.120725Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T09:52:22.121950Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T10:22:22.123626Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T10:52:22.124190Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T11:22:22.126135Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T11:52:22.127546Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T12:22:22.128902Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"
+2026-11-27T12:52:22.131145Z  INFO herdr::logging: checking for updates event="update.check.start" subsystem="update" outcome="started"

@@ -5,9 +5,10 @@ import qs.Ui
 import "../anik.bar"
 
 // CPU and RAM usage as compact text ("CPU 12%  RAM 37%"; swap appears only
-// when in use), in tabular figures so nothing jumps. Values turn orange from 70% and red from 90%. Reads /proc
-// every two seconds. Click opens the system panel (Panel.qml: graphs, temps,
-// top processes); right click opens (or focuses) btop.
+// when in use), in tabular figures so nothing jumps. Values turn orange from 70%
+// and red from 90%. Reads /proc in-process via FileView every two seconds (no
+// subprocess spawns). Click opens the system panel (Panel.qml); right click
+// opens (or focuses) btop.
 BarWidget {
   id: root
   moduleName: "anik.resources"
@@ -51,69 +52,148 @@ BarWidget {
   implicitHeight: barSize
   implicitWidth: row.implicitWidth + Style.space(18)
 
-  // One `cat` every two seconds (no shell, no pipeline): /proc/stat,
-  // /proc/meminfo, /proc/loadavg, /proc/uptime and the CPU temperature file,
-  // which is looked up once at startup.
   property string tempPath: ""
 
-  function parse(text) {
-    var lines = String(text).split("\n"), mem = {}, threads = 0, coreNow = [], coreUse = []
+  function sumCpuFields(parts) {
+    var idle = (Number(parts[4]) || 0) + (Number(parts[5]) || 0)
+    var total = 0
+    for (var i = 1; i < parts.length; i++) total += Number(parts[i]) || 0
+    return { idle: idle, total: total }
+  }
+
+  function parseStat(text) {
+    var lines = String(text || "").split("\n")
+    var threads = 0
+    var coreNow = []
+    var coreUse = []
+    var collectCores = root.opened || root.cores === 0
+
     for (var i = 0; i < lines.length; i++) {
-      var l = lines[i], m
+      var l = lines[i]
       if (l.indexOf("cpu ") === 0) {
-        var f = l.trim().split(/\s+/).slice(1).map(Number)
-        var idle = f[3] + f[4], total = 0
-        for (var j = 0; j < f.length; j++) total += f[j]
-        if (lastCpu && total > lastCpu.total)
-          cpu = 1 - (idle - lastCpu.idle) / (total - lastCpu.total)
-        lastCpu = { idle: idle, total: total }
+        var cur = sumCpuFields(l.trim().split(/\s+/))
+        if (lastCpu && cur.total > lastCpu.total)
+          cpu = Math.max(0, Math.min(1, 1 - (cur.idle - lastCpu.idle) / (cur.total - lastCpu.total)))
+        lastCpu = cur
+        if (!collectCores) break
       } else if (/^cpu\d/.test(l)) {
-        var c = l.trim().split(/\s+/).slice(1).map(Number)
-        var cIdle = c[3] + c[4], cTotal = 0
-        for (var k = 0; k < c.length; k++) cTotal += c[k]
-        var prev = lastCores[threads]
-        coreUse.push(prev && cTotal > prev.total ? 1 - (cIdle - prev.idle) / (cTotal - prev.total) : 0)
-        coreNow.push({ idle: cIdle, total: cTotal })
+        if (root.opened) {
+          var c = sumCpuFields(l.trim().split(/\s+/))
+          var prev = lastCores[threads]
+          coreUse.push(prev && c.total > prev.total
+            ? Math.max(0, Math.min(1, 1 - (c.idle - prev.idle) / (c.total - prev.total)))
+            : 0)
+          coreNow.push(c)
+        }
         threads++
-      } else if ((m = l.match(/^(\w+):\s+(\d+)/))) {
-        mem[m[1]] = Number(m[2])
-      } else if (/^\d+\.\d+ \d+\.\d+ \d+\.\d+ \d+\//.test(l)) {
-        load = l.split(" ").slice(0, 3).join("  ")      // /proc/loadavg
-      } else if (/^\d+\.\d+ \d+\.\d+$/.test(l)) {
-        uptime = Number(l.split(" ")[0]) || 0           // /proc/uptime
-      } else if (/^\d+$/.test(l)) {
-        temp = Number(l) / 1000                          // millidegrees
+      } else if (threads > 0) {
+        break
       }
     }
-    if (threads > 0) { cores = threads; lastCores = coreNow; coreUsage = coreUse }
+
+    if (threads > 0 && root.cores !== threads) cores = threads
+    if (root.opened && threads > 0) {
+      lastCores = coreNow
+      coreUsage = coreUse
+    }
+    cpuHistory = pushSample(cpuHistory, cpu)
+  }
+
+  function parseMem(text) {
+    var lines = String(text || "").split("\n")
+    var mem = {}
+    var seen = 0
+    for (var i = 0; i < lines.length; i++) {
+      var m = lines[i].match(/^(MemTotal|MemAvailable|MemFree|Buffers|Cached|SReclaimable|SwapTotal|SwapFree):\s+(\d+)/)
+      if (!m) continue
+      mem[m[1]] = Number(m[2])
+      seen++
+      if (seen >= 8) break
+    }
     if (mem.MemTotal) {
       memTotal = mem.MemTotal
-      memUsed = mem.MemTotal - mem.MemAvailable
-      ram = memUsed / memTotal
-      // page cache that is in use but reclaimable (never more than what's left)
+      memUsed = mem.MemTotal - (mem.MemAvailable || 0)
+      ram = Math.max(0, Math.min(1, memUsed / memTotal))
       memCache = Math.max(0, Math.min((mem.Buffers || 0) + (mem.Cached || 0) + (mem.SReclaimable || 0),
                                       memTotal - memUsed - (mem.MemFree || 0)))
+      ramHistory = pushSample(ramHistory, ram)
     }
     swapTotal = mem.SwapTotal || 0
-    swapUsed = swapTotal - (mem.SwapFree || 0)
+    swapUsed = Math.max(0, swapTotal - (mem.SwapFree || 0))
     swap = swapTotal ? swapUsed / swapTotal : 0
-    cpuHistory = pushSample(cpuHistory, cpu)
-    ramHistory = pushSample(ramHistory, ram)
+  }
+
+  function parseLoad(text) {
+    var parts = String(text || "").trim().split(/\s+/)
+    if (parts.length >= 3) load = parts[0] + "  " + parts[1] + "  " + parts[2]
+  }
+
+  function parseUptime(text) {
+    var parts = String(text || "").trim().split(/\s+/)
+    if (parts.length >= 1) uptime = Number(parts[0]) || 0
+  }
+
+  function parseTemp(text) {
+    var v = Number(String(text || "").trim())
+    if (isFinite(v) && v > 0) temp = v / 1000
+  }
+
+  function sampleNow() {
+    statFile.reload()
+    memFile.reload()
+    if (root.opened) {
+      if (loadFile.path !== "") loadFile.reload()
+      if (uptimeFile.path !== "") uptimeFile.reload()
+      if (tempFile.path !== "") tempFile.reload()
+    }
   }
 
   Process {
     id: tempFinder
     running: true
-    command: ["sh", "-c", "for h in /sys/class/hwmon/hwmon*; do case $(cat $h/name) in coretemp|k10temp|zenpower)"
+    command: ["sh", "-c", "for h in /sys/class/hwmon/hwmon*; do case $(cat $h/name 2>/dev/null) in coretemp|k10temp|zenpower)"
       + " echo $h/temp1_input; break;; esac; done"]
     stdout: StdioCollector { onStreamFinished: root.tempPath = String(text).trim() }
   }
 
-  Process {
-    id: reader
-    command: ["cat", "/proc/stat", "/proc/meminfo", "/proc/loadavg", "/proc/uptime"]
-      .concat(root.tempPath !== "" ? [root.tempPath] : [])
-    stdout: StdioCollector { onStreamFinished: root.parse(text) }
+  FileView {
+    id: statFile
+    path: "/proc/stat"
+    watchChanges: false
+    printErrors: false
+    onLoaded: root.parseStat(text())
+  }
+
+  FileView {
+    id: memFile
+    path: "/proc/meminfo"
+    watchChanges: false
+    printErrors: false
+    onLoaded: root.parseMem(text())
+  }
+
+  FileView {
+    id: loadFile
+    path: root.opened ? "/proc/loadavg" : ""
+    watchChanges: false
+    printErrors: false
+    onLoaded: root.parseLoad(text())
+  }
+
+  FileView {
+    id: uptimeFile
+    path: root.opened ? "/proc/uptime" : ""
+    watchChanges: false
+    printErrors: false
+    onLoaded: root.parseUptime(text())
+  }
+
+  FileView {
+    id: tempFile
+    path: root.opened && root.tempPath !== "" ? root.tempPath : ""
+    watchChanges: false
+    printErrors: false
+    onLoaded: root.parseTemp(text())
   }
 
   Timer {
@@ -121,7 +201,7 @@ BarWidget {
     running: root.visible
     repeat: true
     triggeredOnStart: true
-    onTriggered: if (!reader.running) reader.running = true
+    onTriggered: root.sampleNow()
   }
 
   // ---- System panel
@@ -137,6 +217,7 @@ BarWidget {
 
   // Shape contract the bar uses to route and switch popouts (see anik.bell).
   readonly property bool opened: panelLoader.item ? panelLoader.item.opened === true : false
+  onOpenedChanged: if (opened) sampleNow()
   function open() { if (panelLoader.item) panelLoader.item.open() }
   function close() { if (panelLoader.item) panelLoader.item.close() }
   readonly property bool popoutSwitchClosing: panelLoader.item ? panelLoader.item.popoutSwitchClosing === true : false
@@ -162,12 +243,11 @@ BarWidget {
     color: root.opened
       ? Qt.rgba(themePalette.accent.r, themePalette.accent.g, themePalette.accent.b, 0.10)
       : Qt.rgba(1, 1, 1, hover.hovered ? 0.06 : 0)
-        Behavior on color { ColorAnimation { duration: 140 } }
+    Behavior on color { ColorAnimation { duration: Style.duration(140) } }
   }
 
   // One stat: dim label, then the value in tabular figures so the numbers
-  // don't shift as they update ("CPU 12%"). Same body size and weight as every other label on the bar;
-  // the label differs only by colour.
+  // don't shift as they update ("CPU 12%").
   component Stat: Item {
     id: stat
     property string label: ""
@@ -184,8 +264,7 @@ BarWidget {
       Text {
         anchors.baseline: valueText.baseline
         text: stat.label
-        // translucent text rather than textDim: stays readable on a bright
-        // wallpaper now that the bar is fully transparent
+        textFormat: Text.PlainText
         color: themePalette.soft
         font.family: root.fontFamily
         font.pixelSize: Style.font.body
@@ -195,12 +274,13 @@ BarWidget {
       Text {
         id: valueText
         text: Math.round(stat.value * 100) + "%"
+        textFormat: Text.PlainText
         color: stat.value >= 0.7 ? stat.level : themePalette.text
         font.family: root.fontFamily
         font.pixelSize: Style.font.body
         font.features: { "tnum": 1 }
         renderType: Text.NativeRendering
-        Behavior on color { ColorAnimation { duration: 300 } }
+        Behavior on color { ColorAnimation { duration: Style.duration(300) } }
       }
     }
   }
@@ -215,9 +295,6 @@ BarWidget {
     Stat { label: "SWAP"; value: root.swap; visible: root.swap >= 0.01 }
   }
 
-  // The bar's slot overlay sits above this widget, decides the cursor and
-  // routes left clicks: it shows the hand only over registered click targets
-  // with triggerPress (see WidgetButton), so register like one.
   function triggerPress(button) {
     if (root.bar) root.bar.hideTooltip(root)
     if (button === Qt.RightButton) {

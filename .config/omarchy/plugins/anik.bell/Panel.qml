@@ -333,6 +333,9 @@ Panel {
                   flat: true
                   app: entry.modelData.app || ""
                   appIcon: entry.modelData.appIcon || ""
+                  source: entry.modelData.source || ""
+                  groupKey: entry.modelData.groupKey || ""
+                  execArgv: entry.modelData.execArgv || ""
                   summary: entry.modelData.summary || ""
                   body: entry.modelData.body || ""
                   image: entry.modelData.image || ""

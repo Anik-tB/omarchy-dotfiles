@@ -25,6 +25,7 @@ split-divider-color = #2e2842
 # Cursor styling
 cursor-style = "bar"
 cursor-style-blink = false
+adjust-cursor-thickness = 2
 cursor-color = #7d95f5
 cursor-text = #14111e
 
@@ -37,8 +38,8 @@ shell-integration-features = no-cursor,ssh-env,ssh-terminfo,sudo,title
 # Select to copy into the real clipboard, hide the mouse while typing
 copy-on-select = clipboard
 mouse-hide-while-typing = true
-# ~100 MB of scrollback per pane
-scrollback-limit = 100000000
+# ~10 MB of scrollback per pane
+scrollback-limit = 10000000
 # Desktop notification when a long command (>10s) finishes while you're looking elsewhere
 notify-on-command-finish = unfocused
 notify-on-command-finish-action = notify

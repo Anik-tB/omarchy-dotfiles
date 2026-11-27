@@ -40,7 +40,7 @@ Item {
   readonly property real localHoverY: hoverY - y
 
   function pointerOver(item) {
-    if (!hovered) return false
+    if (!hovered || hoverX < 0 || hoverY < 0) return false
     var origin = item.mapToItem(card, 0, 0)
     return localHoverX >= origin.x && localHoverX <= origin.x + item.width
         && localHoverY >= origin.y && localHoverY <= origin.y + item.height
@@ -472,7 +472,8 @@ Item {
               Text {
                 textFormat: Text.PlainText
                 id: stamp
-                anchors.centerIn: parent
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
                 text: card.ago()
                 color: card.dimColor
                 opacity: card.hovered ? 0 : 1
@@ -482,17 +483,22 @@ Item {
                 Behavior on opacity { NumberAnimation { duration: card.fade; easing.type: Easing.InOutQuad } }
               }
 
-              Item {
+              Rectangle {
                 id: shut
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                implicitWidth: closeMark.implicitWidth + Style.space(6)
-                implicitHeight: closeMark.implicitHeight
+                implicitWidth: Style.space(22)
+                implicitHeight: Style.space(22)
+                radius: width / 2
+                color: shutArea.pressed
+                  ? Qt.rgba(Commons.Color.notifications.text.r, Commons.Color.notifications.text.g, Commons.Color.notifications.text.b, 0.35)
+                  : (shut.hot ? Qt.rgba(Commons.Color.notifications.text.r, Commons.Color.notifications.text.g, Commons.Color.notifications.text.b, 0.22) : "transparent")
                 enabled: card.hovered
                 opacity: card.hovered ? 1 : 0
                 visible: opacity > 0.01
-                readonly property bool hot: card.pointerOver(shut)
+                readonly property bool hot: shutArea.containsMouse || card.pointerOver(shutArea)
                 Behavior on opacity { NumberAnimation { duration: card.fade; easing.type: Easing.InOutQuad } }
+                Behavior on color { ColorAnimation { duration: Style.duration(100) } }
 
                 Text {
                   id: closeMark
@@ -500,14 +506,21 @@ Item {
                   textFormat: Text.PlainText
                   text: "✕"
                   color: shut.hot ? Commons.Color.notifications.text : card.dimColor
-                  font.pixelSize: Math.round(Style.font.caption * 1.44)
+                  font.family: card.textFamily
+                  font.pixelSize: Math.round(Style.font.caption * 1.3)
                 }
 
                 MouseArea {
+                  id: shutArea
                   anchors.fill: parent
                   anchors.margins: -Style.space(3)
+                  hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onClicked: card.dismissed()
+                  acceptedButtons: Qt.LeftButton
+                  onClicked: function(mouse) {
+                    mouse.accepted = true
+                    card.dismissed()
+                  }
                 }
               }
             }

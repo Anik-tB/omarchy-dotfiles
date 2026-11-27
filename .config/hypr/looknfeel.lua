@@ -19,7 +19,7 @@ hl.config({
     decoration = {
         --rounding = 12,
 
-        dim_inactive = true,
+        dim_inactive = false,
         dim_strength = 0.06,
         active_opacity = 1.0,
         inactive_opacity = 1.0,
@@ -44,10 +44,6 @@ hl.config({
         animate_manual_resizes = false,
         animate_mouse_windowdragging = false,
         focus_on_activate = false,
-    },
-
-    render = {
-        direct_scanout = 0,
     },
 
     cursor = {

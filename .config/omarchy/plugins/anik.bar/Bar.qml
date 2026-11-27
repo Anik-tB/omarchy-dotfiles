@@ -37,7 +37,7 @@ Item {
   // Anik: omarchy.media runs as this bar's own copy (widgets/AnikMedia.qml).
   readonly property Component anikMediaComponent: Qt.createComponent(Qt.resolvedUrl("widgets/AnikMedia.qml"))
   // Anik: wide text modules that get a soft hover pill instead of a circle.
-  readonly property var hoverPillModules: ["anik.clock", "anik.power", "anik.cava"]
+  readonly property var hoverPillModules: ["anik.clock", "anik.power"]
   // Anik: bumped whenever any widget's width changes, so the group dividers
   // (ModuleSlot.divided) are worked out again once neighbours have loaded.
   property int anikWidthRevision: 0

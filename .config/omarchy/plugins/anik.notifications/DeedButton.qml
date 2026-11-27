@@ -21,9 +21,9 @@ Item {
   // Matched on the value: a card with two codes has two Copy buttons.
   readonly property bool taken: toast && deed.kind === "code" && toast.copiedCode === String(deed.value)
 
-  // The deck's hover region sits above every card, so hover is worked out
-  // from the pointer position the deck hands down.
-  readonly property bool hot: toast ? toast.pointerOver(button) : false
+  // Real MouseArea hover works now that the deck uses HoverHandler; fall
+  // back to deck pointer coordinates before the pointer moves into the bar.
+  readonly property bool hot: buttonArea.containsMouse || (toast ? toast.pointerOver(button) : false)
 
   // A tick rather than a past-tense verb, so the width does not change.
   readonly property string labelText: taken ? "\u{f012c}" : String(deed.label || "")
@@ -81,7 +81,9 @@ Item {
   TextMetrics { id: labelMetrics; font: label.font; text: button.labelText }
 
   MouseArea {
+    id: buttonArea
     anchors.fill: parent
+    hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     onClicked: button.toast.doDeed(button.deed)
   }

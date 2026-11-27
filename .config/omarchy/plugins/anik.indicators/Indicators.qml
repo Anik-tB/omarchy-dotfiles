@@ -487,9 +487,9 @@ BarWidget {
     required property string indicatorBlock
     property bool reportActiveState: false
     property bool activeStateObserved: false
-    readonly property string indicatorId: root.entryId(entry)
-    readonly property var indicatorSettings: root.entrySettings(entry)
-    readonly property var barRef: root.bar
+    readonly property string indicatorId: root ? root.entryId(entry) : ""
+    readonly property var indicatorSettings: root ? root.entrySettings(entry) : ({})
+    readonly property var barRef: root ? root.bar : null
 
     implicitWidth: indicatorSource.item && indicatorSource.item.visible ? indicatorSource.item.implicitWidth : 0
     implicitHeight: indicatorSource.item && indicatorSource.item.visible ? indicatorSource.item.implicitHeight : 0
@@ -515,11 +515,13 @@ BarWidget {
     Rectangle {
       anchors.centerIn: parent
       // Round for a plain icon; a pill around icon + label (the recording timer).
-      readonly property real dot: root.bar ? root.barSize - Style.space(10) : 0
-      width: root.bar && parent.width > root.barSize ? parent.width - Style.space(2) : Math.min(parent.width, dot)
-      height: Math.min(dot, parent.height)
+      readonly property var hostBar: root ? root.bar : null
+      readonly property real hostBarSize: root ? root.barSize : 0
+      readonly property real dot: hostBar ? hostBarSize - Style.space(10) : 0
+      width: hostBar && indicatorSlot.width > hostBarSize ? indicatorSlot.width - Style.space(2) : Math.min(indicatorSlot.width, dot)
+      height: Math.min(dot, indicatorSlot.height)
       radius: height / 2
-      color: root.bar && root.bar.foreground ? root.bar.foreground : "white"
+      color: hostBar && hostBar.foreground ? hostBar.foreground : "white"
       opacity: indicatorHover.hovered && indicatorSlot.width > 0 ? 0.1 : 0
       Behavior on opacity { NumberAnimation { duration: 150 } }
     }
@@ -546,7 +548,7 @@ BarWidget {
     function injectProps() {
       var target = indicatorSource.item
       if (!target) return
-      if ("bar" in target) target.bar = root.bar
+      if ("bar" in target) target.bar = root ? root.bar : null
       if ("moduleName" in target) target.moduleName = indicatorId
       if ("settings" in target) target.settings = indicatorSettings
       if ("indicatorBlock" in target) target.indicatorBlock = indicatorBlock

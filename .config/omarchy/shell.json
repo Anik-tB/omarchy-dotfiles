@@ -16,9 +16,6 @@
           "id": "omarchy.media"
         },
         {
-          "id": "anik.cava"
-        },
-        {
           "id": "anik.resources"
         }
       ],
@@ -36,7 +33,7 @@
       ],
       "left": [
         {
-          "id": "omarchy.menu"
+          "id": "anik.menu"
         },
         {
           "id": "anik.workspaces"
@@ -75,15 +72,17 @@
   "cloneSourceRestores": [
     "anik.notifications",
     "anik.osd",
-    "anik.dock"
+    "anik.dock",
+    "anik.menu"
   ],
   "disabledPlugins": [
     "omarchy.notifications",
     "omarchy.osd",
-    "omarchy.dock"
+    "omarchy.dock",
+    "omarchy.menu"
   ],
   "dock": {
-    "autohide": false
+    "autohide": true
   },
   "idle": {
     "lock": 300,

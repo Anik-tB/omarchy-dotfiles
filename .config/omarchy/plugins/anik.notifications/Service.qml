@@ -307,6 +307,10 @@ Item {
     if (!order.length) return false
     keyboardMode = true
     keyboardRejected = ({})
+    if (!pointerIn) {
+      hoverX = -1
+      hoverY = -1
+    }
     selectCard(order.indexOf(key) >= 0 ? key : order[0])
     keyboardIdle.restart()
     return true
@@ -1572,72 +1576,77 @@ Item {
           width: service.notificationWidth
           height: service.deckHeight
 
-          // One hover region over the whole deck, so crossing between cards does
-          // not flicker it shut. It accepts no buttons; clicks reach the cards.
-          MouseArea {
-            id: hoverArea
-            z: 5000
-            anchors.fill: parent
-            anchors.margins: -Style.space(4)
-            hoverEnabled: true
-            acceptedButtons: Qt.NoButton
-            propagateComposedEvents: true
-
-            // The cards cannot see hover under this region, so they are told.
-            function hoverAt(x, y) {
-              service.hoverX = x
-              service.hoverY = y
-              var places = service.placements
-              var found = ""
+          // The deck's coordinates are shared directly by cards and buttons.
+          function hoverAt(x, y) {
+            service.hoverX = x
+            service.hoverY = y
+            var places = service.placements
+            var found = ""
+            if (x >= 0 && x <= deck.width) {
               for (var key in places) {
                 var pl = places[key]
                 if (pl.hidden || pl.leaving) continue
                 var h = pl.height || Style.space(58)
                 if (y >= pl.y && y <= pl.y + h) { found = key; break }
               }
-              service.hoverKey = found
             }
+            service.hoverKey = found
+          }
 
-            // Cards move under a still pointer after a dismissal: re-hit-test
-            // once settled, or a second click invokes a stale card.
-            Connections {
-              target: service
-              function onSettled() {
-                Qt.callLater(function() {
-                  if (hoverArea.containsMouse)
-                    hoverArea.hoverAt(hoverArea.mouseX, hoverArea.mouseY)
-                })
+          function updatePointer(x, y) {
+            hoverAt(x, y)
+
+            // Which deck you are over decides which opens.
+            var decks = service.layout.decks
+            for (var i = 0; i < decks.length; i++) {
+              var first = decks[i].rows[0]
+              var place = service.layout.placements[first.key]
+              if (!place) continue
+              var top = place.y
+              var bottom = top + (service.heights[first.key] || Style.space(58))
+              if (y >= top - Style.space(6) && y <= bottom + Style.space(6)) {
+                // Opening another deck would hide the keyboard's card.
+                if (service.keyboardMode && decks[i].key !== service.openDeck) service.stopKeyboard()
+                service.pointerEntered(decks[i].key)
+                return
               }
             }
+          }
 
-            onContainsMouseChanged: {
-              service.pointerIn = containsMouse
-              if (containsMouse) {
+          // One hover region over the whole deck, so crossing between cards does
+          // not flicker it shut. HoverHandler never steals hover or cursorShape
+          // from the cards and buttons beneath it.
+          HoverHandler {
+            id: deckHover
+            margin: Style.space(4)
+
+            onHoveredChanged: {
+              service.pointerIn = hovered
+              if (hovered) {
                 service.pointerEntered(undefined)
-                hoverAt(mouseX, mouseY)
+                deck.updatePointer(point.position.x, point.position.y)
               } else {
                 service.hoverKey = ""
+                service.hoverX = -1
+                service.hoverY = -1
                 service.pointerLeft()
               }
             }
-            onPositionChanged: function(mouse) {
-              hoverAt(mouse.x, mouse.y)
+            onPointChanged: {
+              if (!hovered) return
+              deck.updatePointer(point.position.x, point.position.y)
+            }
+          }
 
-              // Which deck you are over decides which opens.
-              var decks = service.layout.decks
-              for (var i = 0; i < decks.length; i++) {
-                var first = decks[i].rows[0]
-                var place = service.layout.placements[first.key]
-                if (!place) continue
-                var top = place.y
-                var bottom = top + (service.heights[first.key] || Style.space(58))
-                if (mouse.y >= top - Style.space(6) && mouse.y <= bottom + Style.space(6)) {
-                  // Opening another deck would hide the keyboard's card.
-                  if (service.keyboardMode && decks[i].key !== service.openDeck) service.stopKeyboard()
-                  service.pointerEntered(decks[i].key)
-                  return
-                }
-              }
+          // Cards move under a still pointer after a dismissal: re-hit-test
+          // once settled, or a second click invokes a stale card.
+          Connections {
+            target: service
+            function onSettled() {
+              Qt.callLater(function() {
+                if (deckHover.hovered)
+                  deck.hoverAt(deckHover.point.position.x, deckHover.point.position.y)
+              })
             }
           }
 
@@ -1645,6 +1654,7 @@ Item {
             model: toasts
 
             Toast {
+              id: toastItem
               required property var model
               row: model
               scene: service
@@ -1672,7 +1682,20 @@ Item {
               drawnHeight: service.at(model.key, "height")
               // A hidden output collapses child visibility; its measurements
               // must not overwrite the visible deck's heights.
-              onTargetHeightChanged: if (surface.showingNotifications) service.noteHeight(model.key, targetHeight)
+              onTargetHeightChanged: {
+                if (!surface.showingNotifications) return
+                var key = String(model.key || "")
+                if (service.arriving === key) {
+                  service.noteHeight(key, targetHeight)
+                  return
+                }
+                // Defer layout commit past the current binding evaluation to avoid
+                // feedback loops between card height, placements, and deedArea.shown.
+                Qt.callLater(function() {
+                  if (toastItem && surface.showingNotifications && service.rowIndexFor(key) >= 0)
+                    service.noteHeight(key, toastItem.targetHeight)
+                })
+              }
               Component.onCompleted: if (surface.showingNotifications) service.noteHeight(model.key, targetHeight)
 
               onExpired: service.closeToast(model.key, "expired")

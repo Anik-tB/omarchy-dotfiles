@@ -7,6 +7,7 @@ anik.bluetooth     | ~/.config/omarchy/plugins/anik.bluetooth     | shell/plugin
 anik.clock         | ~/.config/omarchy/plugins/anik.clock         | shell/plugins/panels/clock
 anik.dock          | ~/.config/omarchy/plugins/anik.dock          | shell/plugins/dock
 anik.indicators    | ~/.config/omarchy/plugins/anik.indicators    | shell/plugins/bar/widgets/Indicators.qml shell/plugins/bar/widgets/Indicators.manifest.json shell/plugins/bar/indicators
+anik.menu          | ~/.config/omarchy/plugins/anik.menu          | shell/plugins/menu
 anik.monitor       | ~/.config/omarchy/plugins/anik.monitor       | shell/plugins/panels/monitor
 anik.network       | ~/.config/omarchy/plugins/anik.network       | shell/plugins/panels/network
 anik.notifications | ~/.config/omarchy/plugins/anik.notifications (4.5 code + "Anik:" edits) | shell/plugins/notifications

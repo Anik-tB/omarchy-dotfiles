@@ -15,6 +15,8 @@ import qs.Commons
 import qs.Commons as Commons
 import qs.Ui
 import "NotificationLogic.js" as NotificationLogic
+import "../anik.notifications/Icons.js" as Icons
+import "../anik.notifications/Security.js" as Security
 import "../anik.bar"
 
 BorderSurface {
@@ -25,6 +27,9 @@ BorderSurface {
 
   property string app: ""
   property string appIcon: ""
+  property string source: ""
+  property string groupKey: ""
+  property string execArgv: ""
   property string summary: ""
   property string body: ""
   property string image: ""
@@ -65,11 +70,58 @@ BorderSurface {
     return text.length > 0 ? title + "\n" + text : title
   }
   readonly property bool hasButtons: actionList.length > 0 || code.length > 0
-  // Prefer per-notification media/avatar data, then fall back to the app icon.
-  // The `check` flag avoids Qt's missing-texture placeholder for unknown names.
-  readonly property string smallIconSource: image.length > 0 ? image : iconSource(appIcon)
+  // Prefer local media/screenshot thumbnail, then themed/desktop app icon,
+  // then a sleek outline fallback glyph.
+  readonly property string execPreviewSource: {
+    var argv = Security.parseExecArgv(execArgv)
+    if (!argv || argv.length < 2) return ""
+    var candidate = String(argv[1] || "")
+    if (!/\.(png|jpe?g|webp|gif)$/i.test(candidate)) return ""
+    return Security.localImageUrl(candidate)
+  }
+  readonly property string sentImageSource: {
+    var v = String(image || "")
+    if (/^image:\/\/qsimage\/[0-9]+\/[0-9]+$/.test(v)) return v
+    return Security.localImageUrl(v) || execPreviewSource
+  }
+  readonly property var iconSources: {
+    var appsRevision = DesktopEntries.applications.values.length
+    var want = Icons.candidates({
+      app: root.app,
+      appIcon: root.appIcon,
+      source: root.source,
+      groupKey: root.groupKey
+    })
+    var list = []
+    if (sentImageSource) list.push(sentImageSource)
+    for (var i = 0; i < want.themed.length; i++) {
+      var tp = Quickshell.iconPath(want.themed[i], true)
+      if (tp && list.indexOf(tp) < 0) list.push(tp)
+    }
+    for (var j = 0; j < want.entries.length; j++) {
+      var de = DesktopEntries.heuristicLookup(want.entries[j])
+      var ip = de ? iconSource(de.icon) : ""
+      if (ip && list.indexOf(ip) < 0) list.push(ip)
+    }
+    if (root.app) {
+      var slug = Icons.slug(root.app)
+      var extra = [slug + "-desktop", slug + "-browser"]
+      for (var k = 0; k < extra.length; k++) {
+        var ep = Quickshell.iconPath(extra[k], true)
+        if (ep && list.indexOf(ep) < 0) list.push(ep)
+      }
+    }
+    return list
+  }
+  readonly property string iconSourcesKey: iconSources.join("\n")
+  property int iconFailed: 0
+  onIconSourcesKeyChanged: iconFailed = 0
+  readonly property string smallIconSource: iconSources[iconFailed] || ""
+  readonly property bool isPhoto: smallIconSource !== "" && smallIconSource === sentImageSource
+  readonly property bool isSymbolic: !isPhoto && Icons.isSymbolic(smallIconSource)
   readonly property bool hasGlyph: glyph.length > 0
-  readonly property bool hasSmallIcon: smallIconSource.length > 0 && iconImage.status !== Image.Error
+  readonly property string displayGlyph: !hasGlyph ? "󰂜" : (glyph === "\uf030" ? "󰄄" : glyph)
+  readonly property bool hasSmallIcon: smallIconSource.length > 0 && iconImage.status === Image.Ready
   readonly property bool summaryStartsWithGlyph: NotificationLogic.summaryStartsWithGlyph(summary)
   readonly property bool singleLineToast: sanitizedBody.length === 0
   // A summary that already begins with its own glyph needs no tile.
@@ -182,22 +234,26 @@ BorderSurface {
       Layout.alignment: root.singleLineToast ? Qt.AlignVCenter : Qt.AlignTop
       readonly property real tileRadius: Style.space(9)
 
-      // Tinted tile behind glyphs or when there is no icon at all.
+      // Sleek subtle tile behind fallback glyphs when no thumbnail or app icon exists.
       Rectangle {
         anchors.fill: parent
         radius: tile.tileRadius
         visible: !root.hasSmallIcon
-        color: Qt.rgba(themePalette.accent.r, themePalette.accent.g, themePalette.accent.b, 0.16)
+        color: root.critical
+          ? Qt.rgba(Commons.Color.urgent.r, Commons.Color.urgent.g, Commons.Color.urgent.b, 0.14)
+          : Qt.rgba(themePalette.text.r, themePalette.text.g, themePalette.text.b, 0.06)
         border.width: 1
-        border.color: Qt.rgba(themePalette.accent.r, themePalette.accent.g, themePalette.accent.b, 0.22)
+        border.color: root.critical
+          ? Qt.rgba(Commons.Color.urgent.r, Commons.Color.urgent.g, Commons.Color.urgent.b, 0.30)
+          : Qt.rgba(1, 1, 1, 0.10)
 
         Text {
           anchors.centerIn: parent
           textFormat: Text.PlainText
-          text: root.hasGlyph ? root.glyph : "󰂚"
-          color: themePalette.accent
+          text: root.displayGlyph
+          color: root.critical ? Commons.Color.urgent : themePalette.accent
           font.family: root.fontFamily
-          font.pixelSize: Style.font.iconLarge
+          font.pixelSize: Style.font.icon
         }
       }
 
@@ -205,10 +261,11 @@ BorderSurface {
         id: iconImage
         anchors.fill: parent
         source: root.smallIconSource
+        onStatusChanged: if (status === Image.Error && root.iconFailed < root.iconSources.length) root.iconFailed += 1
         sourceSize.width: width * Screen.devicePixelRatio
         sourceSize.height: height * Screen.devicePixelRatio
-        // Photos/avatars fill the tile; app icons keep their own shape.
-        fillMode: root.image.length > 0 ? Image.PreserveAspectCrop : Image.PreserveAspectFit
+        // Photos/screenshots fill the tile; app icons keep their own shape.
+        fillMode: root.isPhoto ? Image.PreserveAspectCrop : Image.PreserveAspectFit
         asynchronous: true
         smooth: true
         visible: false
@@ -226,10 +283,14 @@ BorderSurface {
         anchors.fill: iconImage
         source: iconImage
         visible: root.hasSmallIcon && iconImage.status === Image.Ready
-        maskEnabled: true
+        opacity: root.isSymbolic ? 0.88 : 1
+        maskEnabled: root.isPhoto
         maskSource: tileMask
         maskThresholdMin: 0.5
         maskSpreadAtMin: 1.0
+        brightness: root.isSymbolic ? 1.0 : 0.0
+        colorization: root.isSymbolic ? 1.0 : 0.0
+        colorizationColor: themePalette.text
       }
     }
 
